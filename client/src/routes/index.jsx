@@ -3,19 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import AuthLayout from '../layouts/AuthLayout.jsx';
 import DashboardLayout from '../layouts/DashboardLayout.jsx';
 import { AuthGuard, GuestGuard, RoleGuard } from './guards.jsx';
-
-// Placeholders for foundational routing test validation (no feature pages are created yet)
-const LandingPlaceholder = () => (
-  <div className="flex h-screen w-screen flex-col items-center justify-center bg-neutral-50 px-4 text-center">
-    <h1 className="text-4xl font-extrabold tracking-tight text-neutral-900">CortexCare</h1>
-    <p className="mt-2 text-neutral-500">Premium AI-powered clinical workflows.</p>
-    <div className="mt-6 flex space-x-4">
-      <a href="/auth/login" className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800">
-        Access Platform
-      </a>
-    </div>
-  </div>
-);
+import LandingPage from '../features/landing/pages/LandingPage.jsx';
 
 const LoginPlaceholder = () => (
   <div>
@@ -90,7 +78,7 @@ export const router = createBrowserRouter([
   // Public Landing route
   {
     path: '/',
-    element: <LandingPlaceholder />,
+    element: <LandingPage />,
   },
   
   // Guest Authentication Routes (guarded by GuestGuard)
