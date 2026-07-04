@@ -1,0 +1,156 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  PATIENT
+  DOCTOR
+}
+
+enum ConsultationStatus {
+  SETUP
+  ACTIVE
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+enum SpeakerRole {
+  PATIENT
+  DOCTOR
+  AI
+  SYSTEM
+}
+
+enum ReviewStatus {
+  PENDING
+  IN_REVIEW
+  REVIEWED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // 1-to-1 relations to domain profiles
+  patient      Patient?
+  doctor       Doctor?
+
+  @@index([email])
+  @@map("users")
+}
+
+model Patient {
+  id            String         @id @default(uuid())
+  userId        String         @unique
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName     String
+  lastName      String
+  clinicId      String?
+  clinic        Clinic?        @relation(fields: [clinicId], references: [id], onDelete: SetNull)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  consultations Consultation[]
+
+  @@map("patients")
+}
+
+model Doctor {
+  id            String         @id @default(uuid())
+  userId        String         @unique
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName     String
+  lastName      String
+  specialty     String?
+  clinicId      String?
+  clinic        Clinic?        @relation(fields: [clinicId], references: [id], onDelete: SetNull)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  consultations Consultation[]
+  notes         DoctorNote[]
+
+  @@map("doctors")
+}
+
+model Consultation {
+  id              String             @id @default(uuid())
+  patientId       String
+  patient         Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctorId        String?
+  doctor          Doctor?            @relation(fields: [doctorId], references: [id], onDelete: SetNull)
+  status          ConsultationStatus @default(SETUP)
+  reviewStatus    ReviewStatus       @default(PENDING)
+  startedAt       DateTime?
+  endedAt         DateTime?
+  reviewedAt      DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  chunks          ConversationChunk[]
+  clinicalContext ClinicalContext?
+  doctorNote      DoctorNote?
+
+  @@map("consultations")
+}
+
+model ConversationChunk {
+  id             String       @id @default(uuid())
+  consultationId String
+  consultation   Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  speaker        SpeakerRole
+  text           String
+  sequence       Int
+  createdAt      DateTime     @default(now())
+
+  @@unique([consultationId, sequence])
+  @@map("conversation_chunks")
+}
+
+model ClinicalContext {
+  id              String       @id @default(uuid())
+  consultationId  String       @unique
+  consultation    Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  summary         String
+  symptoms        Json
+  riskFlags       Json
+  recommendations Json
+  mood            Json
+  confidenceScore Float
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("clinical_contexts")
+}
+
+model DoctorNote {
+  id             String       @id @default(uuid())
+  consultationId String       @unique
+  consultation   Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  doctorId       String
+  doctor         Doctor       @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  notes          String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("doctor_notes")
+}
+
+model Clinic {
+  id        String   @id @default(uuid())
+  name      String
+  code      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  patients  Patient[]
+  doctors   Doctor[]
+
+  @@map("clinics")
+}
