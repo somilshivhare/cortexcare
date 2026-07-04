@@ -5,59 +5,59 @@ const securityFeatures = [
   {
     icon: Lock,
     title: 'Privacy-First Architecture',
-    description: 'Generative AI acts strictly as an administrative assistant. Final diagnostic and note decisions remain with the clinician.',
+    description: 'Generative AI acts strictly as an assistant. Final review, diagnostic alignment, and note submissions remain with the doctor.',
   },
   {
     icon: ShieldAlert,
-    title: 'Cross-Site Scripting (XSS) Block',
-    description: 'Refresh tokens are stored inside HttpOnly secure cookies. JavaScript is blocked from extracting sessions.',
+    title: 'Enterprise-grade Secure Authentication',
+    description: 'Session validations use secure cookie channels to protect practitioner logins from browser extraction.',
   },
   {
     icon: UserCheck,
     title: 'Role-Based Access Control',
-    description: 'Strict authorization middlewares restrict routes. Patients and Doctors are separated by strict JWT payload rules.',
+    description: 'Strict routing layers ensure separate, role-restricted dashboard consoles for Patients and Doctors.',
   },
   {
     icon: KeyRound,
     title: 'Clinic Session Isolation',
-    description: 'Security rules enforce that clinicians can only query consultation records of patients registered under the same clinic.',
+    description: 'Authentication boundaries enforce that clinicians can only query consultation records of patients in their own clinic.',
   },
   {
     icon: RefreshCw,
-    title: 'Stateless Token Rotation',
-    description: 'Short-lived access keys (15 minutes) rotate statelessly via silent browser refresh interceptors.',
+    title: 'Background AI Processing',
+    description: 'Offloads complex processing to isolated background worker threads to guarantee high performance and non-blocking APIs.',
   },
   {
     icon: Key,
     title: 'Encrypted Communication',
-    description: 'CORS credentials configurations guard incoming origins and require secure channel cookies.',
+    description: 'All system transactions, API lookups, and real-time audio streams are routed through encrypted socket tunnels.',
   },
 ];
 
 const Security = () => {
   return (
-    <section id="security" className="bg-neutral-900 py-24 text-white">
+    <section id="security" className="bg-neutral-900 py-32 text-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         
-        {/* Header Section */}
+        {/* Title */}
         <div className="text-center">
-          <span className="rounded-full bg-neutral-800 px-3 py-1 text-xs font-semibold text-neutral-400">
+          <span className="rounded-full bg-neutral-800 px-3 py-1 text-xs font-semibold text-neutral-400 font-mono">
             Security & Trust
           </span>
           <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
             Built for Secure Clinical Operations
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base text-neutral-400">
-            CortexCare integrates structural database constraints and cookie token parameters to secure patient records.
+            CortexCare integrates structural data boundaries and authorization protocols to keep clinical workflows secure.
           </p>
         </div>
 
-        {/* Features list */}
-        <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Features List */}
+        <div className="mt-20 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {securityFeatures.map((feat, idx) => {
             const Icon = feat.icon;
             return (
-              <div key={idx} className="flex flex-col items-start rounded-xl bg-neutral-800/40 p-6 border border-neutral-850">
+              <div key={idx} className="flex flex-col items-start rounded-xl bg-neutral-800/30 p-6 border border-neutral-800">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-neutral-900">
                   <Icon className="h-5 w-5" />
                 </div>

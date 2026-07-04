@@ -1,78 +1,47 @@
 import React from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
-import AuthLayout from '../layouts/AuthLayout.jsx';
+import { createBrowserRouter, Navigate, useNavigate } from 'react-router-dom';
+import {
+  AuthLayout,
+  LoginPage,
+  RegisterPage,
+  ForgotPasswordPage,
+  ResetPasswordPage
+} from '../features/auth/index.js';
+import { PatientDashboard } from '../features/patient/index.js';
+import { ClinicalContextHistoryPage } from '../features/clinical-context/index.js';
+import { TimelinePage } from '../features/timeline/index.js';
+import { ClinicPage } from '../features/clinic/index.js';
+import { ProfilePage, SettingsPage } from '../features/profile/index.js';
+import { DoctorDashboard, DoctorConsultationDetailPage } from '../features/doctor/index.js';
+import { VoiceConsultationPage } from '../features/consultation/index.js';
 import DashboardLayout from '../layouts/DashboardLayout.jsx';
 import { AuthGuard, GuestGuard, RoleGuard } from './guards.jsx';
 import LandingPage from '../features/landing/pages/LandingPage.jsx';
+import { Sparkles, ArrowLeft } from 'lucide-react';
 
-const LoginPlaceholder = () => (
-  <div>
-    <h2 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">Sign in to your account</h2>
-    <p className="mt-1 text-sm text-neutral-500">Welcome back. Enter your credentials to access the console.</p>
-    <div className="mt-6 h-32 rounded bg-neutral-50 border border-dashed border-neutral-200 flex items-center justify-center text-xs text-neutral-400">
-      [Login Form Panel Placeholder]
+const ComingSoonPlaceholder = ({ moduleName, description }) => {
+  const navigate = useNavigate();
+  return (
+    <div className="flex min-h-[50vh] flex-col items-center justify-center text-center p-8 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xs animate-fade-in">
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-100 dark:bg-neutral-855 text-neutral-900 dark:text-white animate-pulse">
+        <Sparkles className="h-6 w-6 text-amber-500" />
+      </div>
+      <h2 className="mt-4 text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
+        {moduleName} - Coming Soon
+      </h2>
+      <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400 max-w-sm leading-relaxed">
+        {description || 'This feature is under active development. Our engineering team is currently building these interface pipelines.'}
+      </p>
+      <button
+        onClick={() => navigate('/patient/dashboard')}
+        className="mt-6 flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-xs font-bold text-white hover:bg-neutral-800 transition-colors dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span>Back to Workspace</span>
+      </button>
     </div>
-  </div>
-);
-
-const RegisterPlaceholder = () => (
-  <div>
-    <h2 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">Create an account</h2>
-    <p className="mt-1 text-sm text-neutral-500">Select your role and initialize your professional profile.</p>
-    <div className="mt-6 h-32 rounded bg-neutral-50 border border-dashed border-neutral-200 flex items-center justify-center text-xs text-neutral-400">
-      [Registration Form Panel Placeholder]
-    </div>
-  </div>
-);
-
-const PatientDashboardPlaceholder = () => (
-  <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-    <h2 className="text-lg font-bold">Patient Dashboard</h2>
-    <p className="text-sm text-neutral-500">Chronological history of your voice-intake consultations.</p>
-  </div>
-);
-
-const PatientProfilePlaceholder = () => (
-  <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-    <h2 className="text-lg font-bold">Patient Profile Settings</h2>
-    <p className="text-sm text-neutral-500">Edit demographic profile parameters.</p>
-  </div>
-);
-
-const PatientConsultationPlaceholder = () => (
-  <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-    <h2 className="text-lg font-bold">New Voice Intake Session</h2>
-    <p className="text-sm text-neutral-500">Establish a secure voice session with CortexCare AI.</p>
-  </div>
-);
-
-const DoctorDashboardPlaceholder = () => (
-  <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-    <h2 className="text-lg font-bold">Clinician Dashboard</h2>
-    <p className="text-sm text-neutral-500">Track pending unassigned consultations and claimed sessions.</p>
-  </div>
-);
-
-const DoctorClinicPlaceholder = () => (
-  <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-    <h2 className="text-lg font-bold">Clinic Management Panel</h2>
-    <p className="text-sm text-neutral-500">Administer doctors and enrolled patients in your facility.</p>
-  </div>
-);
-
-const DoctorProfilePlaceholder = () => (
-  <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-    <h2 className="text-lg font-bold">Clinician Profile Settings</h2>
-    <p className="text-sm text-neutral-500">Edit specialty credentials and metadata.</p>
-  </div>
-);
-
-const TimelinePlaceholder = () => (
-  <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-    <h2 className="text-lg font-bold">Session Event Timeline</h2>
-    <p className="text-sm text-neutral-500">Detailed historical event aggregates of this consultation.</p>
-  </div>
-);
+  );
+};
 
 export const router = createBrowserRouter([
   // Public Landing route
@@ -90,8 +59,10 @@ export const router = createBrowserRouter([
       </GuestGuard>
     ),
     children: [
-      { path: 'login', element: <LoginPlaceholder /> },
-      { path: 'register', element: <RegisterPlaceholder /> },
+      { path: 'login', element: <LoginPage /> },
+      { path: 'register', element: <RegisterPage /> },
+      { path: 'forgot-password', element: <ForgotPasswordPage /> },
+      { path: 'reset-password', element: <ResetPasswordPage /> },
     ],
   },
 
@@ -106,10 +77,22 @@ export const router = createBrowserRouter([
       </AuthGuard>
     ),
     children: [
-      { path: 'dashboard', element: <PatientDashboardPlaceholder /> },
-      { path: 'profile', element: <PatientProfilePlaceholder /> },
-      { path: 'consultation', element: <PatientConsultationPlaceholder /> },
-      { path: 'timeline/:consultationId', element: <TimelinePlaceholder /> },
+      { path: 'dashboard', element: <PatientDashboard /> },
+      { path: 'consultation', element: <VoiceConsultationPage /> },
+      { path: 'clinical-context', element: <ClinicalContextHistoryPage /> },
+      {
+        path: 'timeline',
+        element: (
+          <ComingSoonPlaceholder
+            moduleName="Timeline History"
+            description="A visual chronological timeline of your consultation milestones and doctor review audits."
+          />
+        )
+      },
+      { path: 'timeline/:consultationId', element: <TimelinePage /> },
+      { path: 'clinic', element: <ClinicPage /> },
+      { path: 'profile', element: <ProfilePage /> },
+      { path: 'settings', element: <SettingsPage /> },
       { path: '', element: <Navigate to="dashboard" replace /> },
     ],
   },
@@ -125,10 +108,11 @@ export const router = createBrowserRouter([
       </AuthGuard>
     ),
     children: [
-      { path: 'dashboard', element: <DoctorDashboardPlaceholder /> },
-      { path: 'clinic', element: <DoctorClinicPlaceholder /> },
-      { path: 'profile', element: <DoctorProfilePlaceholder /> },
-      { path: 'consultation/:consultationId', element: <TimelinePlaceholder /> },
+      { path: 'dashboard', element: <DoctorDashboard /> },
+      { path: 'clinic', element: <ClinicPage /> },
+      { path: 'profile', element: <ProfilePage /> },
+      { path: 'settings', element: <SettingsPage /> },
+      { path: 'consultation/:consultationId', element: <DoctorConsultationDetailPage /> },
       { path: '', element: <Navigate to="dashboard" replace /> },
     ],
   },

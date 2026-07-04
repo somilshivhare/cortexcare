@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, Minus } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus } from 'lucide-react';
 
 const faqs = [
   {
@@ -32,43 +33,59 @@ const FAQ = () => {
   };
 
   return (
-    <section id="faq" className="mx-auto max-w-4xl px-4 py-24 sm:px-6 lg:px-8">
+    <section id="faq" className="mx-auto max-w-4xl px-4 py-32 sm:px-6 lg:px-8">
       
       {/* Title */}
       <div className="text-center">
-        <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100">
+        <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100 font-mono">
           FAQ
         </span>
         <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white sm:text-4xl">
           Frequently Asked Questions
         </h2>
-        <p className="mx-auto mt-4 max-w-2xl text-base text-neutral-500 dark:text-neutral-400">
+        <p className="mx-auto mt-4 max-w-2xl text-base text-neutral-500 dark:text-neutral-450">
           Learn about our WebRTC architecture, LLM validation, and security protocols.
         </p>
       </div>
 
-      {/* Accordion list */}
-      <div className="mt-16 space-y-4">
+      {/* Accordion List */}
+      <div className="mt-20 space-y-4">
         {faqs.map((faq, idx) => {
           const isOpen = openIdx === idx;
           return (
             <div
               key={idx}
-              className="rounded-xl border border-neutral-200/80 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900 transition-all"
+              className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900 transition-colors"
             >
               <button
                 onClick={() => toggleFaq(idx)}
                 className="flex w-full items-center justify-between text-left focus:outline-none"
               >
                 <span className="text-sm font-bold text-neutral-900 dark:text-white">{faq.question}</span>
-                {isOpen ? <Minus className="h-4 w-4 text-neutral-500" /> : <Plus className="h-4 w-4 text-neutral-500" />}
+                <motion.div
+                  animate={{ rotate: isOpen ? 45 : 0 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                  className="text-neutral-400"
+                >
+                  <Plus className="h-5 w-5" />
+                </motion.div>
               </button>
               
-              {isOpen && (
-                <div className="mt-3 text-xs leading-relaxed text-neutral-500 dark:text-neutral-400 border-t border-neutral-100 dark:border-neutral-800 pt-3">
-                  {faq.answer}
-                </div>
-              )}
+              <AnimatePresence initial={false}>
+                {isOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mt-3 text-xs leading-relaxed text-neutral-500 dark:text-neutral-400 border-t border-neutral-100 dark:border-neutral-800 pt-3">
+                      {faq.answer}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           );
         })}

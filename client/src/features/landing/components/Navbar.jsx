@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../../../contexts/ThemeContext.jsx';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
@@ -39,6 +41,13 @@ const Navbar = () => {
 
           {/* Desktop CTA Actions */}
           <div className="hidden items-center space-x-4 md:flex">
+            <button
+              onClick={toggleTheme}
+              className="rounded-md p-2 text-neutral-450 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white transition-colors"
+              aria-label="Toggle Theme"
+            >
+              {theme === 'light' ? <Moon className="h-4.5 w-4.5" /> : <Sun className="h-4.5 w-4.5" />}
+            </button>
             <Link
               to="/auth/login"
               className="text-sm font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 transition-colors"
@@ -80,6 +89,26 @@ const Navbar = () => {
               </a>
             ))}
             <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 flex flex-col space-y-3">
+              <button
+                onClick={() => {
+                  toggleTheme();
+                  setIsOpen(false);
+                }}
+                className="flex items-center justify-center space-x-2 rounded-md border border-neutral-200 dark:border-neutral-805 py-2 text-xs font-semibold text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
+                aria-label="Toggle Theme"
+              >
+                {theme === 'light' ? (
+                  <>
+                    <Moon className="h-4 w-4" />
+                    <span>Dark Theme</span>
+                  </>
+                ) : (
+                  <>
+                    <Sun className="h-4 w-4" />
+                    <span>Light Theme</span>
+                  </>
+                )}
+              </button>
               <Link
                 to="/auth/login"
                 onClick={() => setIsOpen(false)}

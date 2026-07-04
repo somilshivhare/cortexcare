@@ -9,6 +9,7 @@ import Security from '../components/Security.jsx';
 import ComparisonSection from '../components/ComparisonSection.jsx';
 import Stats from '../components/Stats.jsx';
 import Testimonials from '../components/Testimonials.jsx';
+import EngineeringHighlights from '../components/EngineeringHighlights.jsx';
 import FAQ from '../components/FAQ.jsx';
 import CTA from '../components/CTA.jsx';
 import Footer from '../components/Footer.jsx';
@@ -30,6 +31,7 @@ const LandingPage = () => {
       <ComparisonSection />
       <Stats />
       <Testimonials />
+      <EngineeringHighlights />
       <FAQ />
       <CTA />
       <Footer />
