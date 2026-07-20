@@ -69,8 +69,8 @@ export const joinClinic = async (userId, role, code) => {
     if (!patient) {
       return { success: false, status: 404, error: 'Patient profile not found.' };
     }
-    if (patient.clinicId) {
-      return { success: false, status: 409, error: 'You already belong to a clinic.' };
+    if (patient.clinicId === clinic.id) {
+      return { success: false, status: 400, error: 'You are already enrolled in this clinic.' };
     }
 
     await clinicRepository.assignPatientToClinic(patient.id, clinic.id);
@@ -178,5 +178,70 @@ export const getMembersList = async (userId, role) => {
   return {
     success: true,
     members,
+  };
+};
+
+/**
+ * Remove patient enrollment from a clinic.
+ */
+export const leaveClinic = async (userId, role) => {
+  if (role !== 'PATIENT') {
+    return {
+      success: false,
+      status: 400,
+      error: 'Only patients can leave a clinic.',
+    };
+  }
+
+  const patient = await clinicRepository.findPatientByUserId(userId);
+  if (!patient) {
+    return {
+      success: false,
+      status: 404,
+      error: 'Patient profile not found.',
+    };
+  }
+
+  if (!patient.clinicId) {
+    return {
+      success: false,
+      status: 400,
+      error: 'You are not enrolled in any clinic.',
+    };
+  }
+
+  await clinicRepository.leaveClinic(patient.id);
+
+  return {
+    success: true,
+  };
+};
+
+/**
+ * Regenerate the unique invite code for a clinic.
+ */
+export const regenerateClinicCode = async (userId) => {
+  const doctor = await clinicRepository.findDoctorByUserId(userId);
+  if (!doctor || !doctor.clinicId) {
+    return {
+      success: false,
+      status: 404,
+      error: 'Doctor profile or associated clinic not found.',
+    };
+  }
+
+  // Generate new code
+  let code = generateCode();
+  let existing = await clinicRepository.findClinicByCode(code);
+  while (existing) {
+    code = generateCode();
+    existing = await clinicRepository.findClinicByCode(code);
+  }
+
+  const updatedClinic = await clinicRepository.updateClinicCode(doctor.clinicId, code);
+
+  return {
+    success: true,
+    code: updatedClinic.code,
   };
 };

@@ -121,3 +121,23 @@ export const findDoctorByUserId = async (userId) => {
     where: { userId },
   });
 };
+
+/**
+ * Remove a patient's clinic assignment (leave clinic).
+ */
+export const leaveClinic = async (patientId) => {
+  return await prisma.patient.update({
+    where: { id: patientId },
+    data: { clinicId: null },
+  });
+};
+
+/**
+ * Update the unique invite code for a clinic.
+ */
+export const updateClinicCode = async (clinicId, code) => {
+  return await prisma.clinic.update({
+    where: { id: clinicId },
+    data: { code },
+  });
+};

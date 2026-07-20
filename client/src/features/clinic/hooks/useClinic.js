@@ -3,7 +3,9 @@ import {
   getClinicDetailsApi,
   createClinicApi,
   joinClinicApi,
-  getClinicMembersApi
+  getClinicMembersApi,
+  leaveClinicApi,
+  regenerateClinicCodeApi
 } from '../api/clinic.api.js';
 
 export const useClinicDetails = () => {
@@ -42,6 +44,29 @@ export const useJoinClinic = () => {
       queryClient.invalidateQueries({ queryKey: ['clinic'] });
       queryClient.invalidateQueries({ queryKey: ['patient', 'profile'] });
       queryClient.invalidateQueries({ queryKey: ['doctor', 'profile'] });
+    },
+  });
+};
+
+export const useLeaveClinic = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: leaveClinicApi,
+    onSuccess: () => {
+      queryClient.setQueryData(['clinic', 'details'], null);
+      queryClient.invalidateQueries({ queryKey: ['clinic'] });
+      queryClient.invalidateQueries({ queryKey: ['patient', 'profile'] });
+      queryClient.invalidateQueries({ queryKey: ['doctor', 'profile'] });
+    },
+  });
+};
+
+export const useRegenerateClinicCode = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: regenerateClinicCodeApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clinic'] });
     },
   });
 };

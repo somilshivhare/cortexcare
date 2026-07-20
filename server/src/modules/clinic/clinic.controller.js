@@ -95,3 +95,50 @@ export const getMembers = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error.' });
   }
 };
+
+/**
+ * Handle POST /leave
+ * Removes a Patient from their currently associated clinic.
+ */
+export const leave = async (req, res) => {
+  try {
+    const { id: userId, role } = req.user;
+
+    const result = await clinicService.leaveClinic(userId, role);
+
+    if (!result.success) {
+      return res.status(result.status || 400).json({ error: result.error });
+    }
+
+    return res.status(200).json({
+      message: 'Left clinic successfully.',
+    });
+  } catch (err) {
+    console.error('Leave clinic controller crash:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+};
+
+/**
+ * Handle POST /regenerate-code
+ * Doctor regenerates unique clinic code.
+ */
+export const regenerateCode = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+
+    const result = await clinicService.regenerateClinicCode(userId);
+
+    if (!result.success) {
+      return res.status(result.status || 400).json({ error: result.error });
+    }
+
+    return res.status(200).json({
+      message: 'Clinic invite code regenerated successfully.',
+      code: result.code,
+    });
+  } catch (err) {
+    console.error('Regenerate invite code controller crash:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+};

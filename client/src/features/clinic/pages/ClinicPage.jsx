@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useClinicDetails, useClinicMembers, useCreateClinic, useJoinClinic } from '../hooks/useClinic.js';
+import { useClinicDetails, useClinicMembers, useCreateClinic, useJoinClinic, useLeaveClinic, useRegenerateClinicCode } from '../hooks/useClinic.js';
 import { useAuth } from '../../auth/hooks/useAuth.js';
 import { useToast } from '../../../contexts/ToastContext.jsx';
 import PageHeader from '../../../components/PageHeader.jsx';
@@ -27,6 +27,8 @@ const ClinicPage = () => {
 
   const createMutation = useCreateClinic();
   const joinMutation = useJoinClinic();
+  const leaveMutation = useLeaveClinic();
+  const regenerateMutation = useRegenerateClinicCode();
 
   const [clinicNameInput, setClinicNameInput] = useState('');
   const [inviteCodeInput, setInviteCodeInput] = useState('');
@@ -65,6 +67,26 @@ const ClinicPage = () => {
       setInviteCodeInput('');
     } catch (err) {
       addToast(err.response?.data?.error || 'Failed to join clinic.', 'error');
+    }
+  };
+
+  const handleLeaveClinic = async () => {
+    if (!window.confirm('Are you sure you want to change your clinic? You will leave your current clinic.')) return;
+    try {
+      await leaveMutation.mutateAsync();
+      addToast('Successfully left clinic!', 'success');
+    } catch (err) {
+      addToast(err.response?.data?.error || 'Failed to leave clinic.', 'error');
+    }
+  };
+
+  const handleRegenerateCode = async () => {
+    if (!window.confirm('Are you sure you want to generate a new invite code? The old code will become invalid immediately.')) return;
+    try {
+      await regenerateMutation.mutateAsync();
+      addToast('New invite code generated successfully!', 'success');
+    } catch (err) {
+      addToast(err.response?.data?.error || 'Failed to regenerate code.', 'error');
     }
   };
 
@@ -242,15 +264,35 @@ const ClinicPage = () => {
                 <span className="text-lg font-mono font-bold tracking-widest text-white select-all">
                   {clinic.code}
                 </span>
-                <button
-                  onClick={() => handleCopyCode(clinic.code)}
-                  className="p-1 rounded-md bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white transition-colors cursor-pointer"
-                  title="Copy to Clipboard"
-                >
-                  <ClipboardList className="h-4 w-4" />
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => handleCopyCode(clinic.code)}
+                    className="p-1 rounded-md bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                    title="Copy to Clipboard"
+                  >
+                    <ClipboardList className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={handleRegenerateCode}
+                    disabled={regenerateMutation.isPending}
+                    className="p-1 rounded-md bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+                    title="Generate New Code"
+                  >
+                    <Key className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </div>
+          )}
+
+          {!isDoctor && (
+            <button
+              onClick={handleLeaveClinic}
+              disabled={leaveMutation.isPending}
+              className="px-4 py-2 rounded-lg bg-red-650 hover:bg-red-700 disabled:opacity-50 text-xs font-bold text-white transition-colors shadow-sm cursor-pointer shrink-0"
+            >
+              {leaveMutation.isPending ? 'Leaving...' : 'Change Clinic'}
+            </button>
           )}
         </div>
       </div>
@@ -265,16 +307,18 @@ const ClinicPage = () => {
               <span>Staff Directory ({clinic.totalDoctors || 0})</span>
             </h3>
             
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-neutral-450" />
-              <input
-                type="text"
-                placeholder="Search staff..."
-                value={doctorSearch}
-                onChange={(e) => setDoctorSearch(e.target.value)}
-                className="pl-8 pr-3 py-1.5 w-full md:w-44 rounded-md border border-neutral-200 bg-white text-[10px] text-neutral-900 outline-none focus:border-neutral-950 dark:border-neutral-800 dark:bg-neutral-900 dark:text-white dark:focus:border-white"
-              />
-            </div>
+            {isDoctor && (
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-neutral-455" />
+                <input
+                  type="text"
+                  placeholder="Search staff..."
+                  value={doctorSearch}
+                  onChange={(e) => setDoctorSearch(e.target.value)}
+                  className="pl-8 pr-3 py-1.5 w-full md:w-44 rounded-md border border-neutral-200 bg-white text-[10px] text-neutral-900 outline-none focus:border-neutral-955 dark:border-neutral-800 dark:bg-neutral-900 dark:text-white dark:focus:border-white"
+                />
+              </div>
+            )}
           </div>
 
           <div className="divide-y divide-neutral-100 dark:divide-neutral-800">

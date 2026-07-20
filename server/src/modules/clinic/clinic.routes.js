@@ -20,4 +20,10 @@ router.post('/', authorizeRoles('DOCTOR'), validateCreateClinic, clinicControlle
 // Get clinic members list (accessible by both Doctors and Patients)
 router.get('/members', authorizeRoles('DOCTOR', 'PATIENT'), clinicController.getMembers);
 
+// Leave a clinic (accessible to Patients)
+router.post('/leave', clinicController.leave);
+
+// Regenerate invite code (restricted to Doctors)
+router.post('/regenerate-code', authorizeRoles('DOCTOR'), clinicController.regenerateCode);
+
 export default router;

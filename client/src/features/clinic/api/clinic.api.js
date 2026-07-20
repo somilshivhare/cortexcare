@@ -31,3 +31,19 @@ export const getClinicMembersApi = async () => {
   const response = await api.get('/clinic/members');
   return response.data;
 };
+
+/**
+ * Leave the current clinic (Patient only).
+ */
+export const leaveClinicApi = async () => {
+  const response = await api.post('/clinic/leave');
+  return response.data;
+};
+
+/**
+ * Regenerate the unique invite code for a clinic (Doctor only).
+ */
+export const regenerateClinicCodeApi = async () => {
+  const response = await api.post('/clinic/regenerate-code');
+  return response.data;
+};
