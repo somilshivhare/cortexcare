@@ -8,9 +8,11 @@ export const setAccessToken = (token) => {
   inMemoryAccessToken = token;
 };
 
+const apiBase = import.meta.env.VITE_API_URL || '';
+
 // Instantiate centralized Axios Client
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: `${apiBase}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -53,7 +55,7 @@ api.interceptors.response.use(
         console.log('Access token expired. Attempting background silent refresh...');
         
         // Request a new Access Token using the HttpOnly Refresh Token cookie
-        const refreshResponse = await axios.post('/api/auth/refresh', {}, {
+        const refreshResponse = await axios.post(`${apiBase}/api/auth/refresh`, {}, {
           withCredentials: true,
         });
 
