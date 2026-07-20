@@ -23,7 +23,7 @@ export const findDoctorByUserId = async (userId) => {
 /**
  * Update doctor profile.
  */
-export const updateDoctorByUserId = async (userId, { firstName, lastName, specialty, licenseNumber, bio }) => {
+export const updateDoctorByUserId = async (userId, { firstName, lastName, specialty, licenseNumber, bio, avatarUrl }) => {
   return await prisma.doctor.update({
     where: { userId },
     data: {
@@ -32,6 +32,7 @@ export const updateDoctorByUserId = async (userId, { firstName, lastName, specia
       ...(specialty && { specialty }),
       ...(licenseNumber !== undefined && { licenseNumber }),
       ...(bio !== undefined && { bio }),
+      ...(avatarUrl !== undefined && { avatarUrl }),
     },
   });
 };

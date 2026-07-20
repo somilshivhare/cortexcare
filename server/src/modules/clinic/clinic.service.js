@@ -123,6 +123,10 @@ export const getUserClinic = async (userId, role) => {
   const responseData = {
     id: clinic.id,
     name: clinic.name,
+    logoUrl: clinic.logoUrl,
+    address: clinic.address,
+    phoneNumber: clinic.phoneNumber,
+    timings: clinic.timings,
     ...(role === 'DOCTOR' && { code: clinic.code }),
     totalDoctors: stats.totalDoctors,
     totalPatients: stats.totalPatients,

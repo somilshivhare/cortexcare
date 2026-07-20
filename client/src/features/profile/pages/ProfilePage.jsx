@@ -85,7 +85,7 @@ const ProfilePage = () => {
       return;
     }
     try {
-      const payload = { firstName, lastName };
+      const payload = { firstName, lastName, avatarUrl };
       if (user?.role === 'DOCTOR') {
         payload.specialty = specialty;
         payload.licenseNumber = licenseNumber;

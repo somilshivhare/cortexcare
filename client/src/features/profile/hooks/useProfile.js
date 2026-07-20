@@ -30,11 +30,19 @@ export const useProfile = (role) => {
     },
   });
 
+  const profile = isDoctor ? profileQuery.data?.doctor : profileQuery.data?.patient;
+
   // Simulated Cloudinary avatar link persistence
   const [avatarUrl, setAvatarUrl] = useState(() => {
     const key = userId ? `avatar_${role}_${userId}` : `avatar_${role}`;
     return localStorage.getItem(key) || '';
   });
+
+  useEffect(() => {
+    if (profile?.avatarUrl) {
+      setAvatarUrl(profile.avatarUrl);
+    }
+  }, [profile]);
 
   const updateAvatar = (url) => {
     const key = userId ? `avatar_${role}_${userId}` : `avatar_${role}`;
@@ -47,7 +55,7 @@ export const useProfile = (role) => {
   };
 
   return {
-    profile: isDoctor ? profileQuery.data?.doctor : profileQuery.data?.patient,
+    profile,
     avatarUrl,
     updateAvatar,
     isLoading: profileQuery.isLoading,

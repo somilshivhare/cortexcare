@@ -25,13 +25,14 @@ export const getProfile = async (req, res) => {
  */
 export const updateProfile = async (req, res) => {
   try {
-    const { firstName, lastName, phoneNumber, address } = req.body;
+    const { firstName, lastName, phoneNumber, address, avatarUrl } = req.body;
 
     const result = await patientService.updatePatientProfile(req.user.id, {
       firstName,
       lastName,
       phoneNumber,
       address,
+      avatarUrl,
     });
 
     if (!result.success) {

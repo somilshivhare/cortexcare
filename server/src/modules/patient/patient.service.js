@@ -22,7 +22,7 @@ export const getPatientProfile = async (userId) => {
 /**
  * Update patient profile details by User ID.
  */
-export const updatePatientProfile = async (userId, { firstName, lastName, phoneNumber, address }) => {
+export const updatePatientProfile = async (userId, { firstName, lastName, phoneNumber, address, avatarUrl }) => {
   const patient = await patientRepository.findPatientByUserId(userId);
   if (!patient) {
     return {
@@ -37,6 +37,7 @@ export const updatePatientProfile = async (userId, { firstName, lastName, phoneN
     lastName,
     phoneNumber,
     address,
+    avatarUrl,
   });
 
   return {

@@ -44,7 +44,7 @@ const DoctorConsultationDetailPage = () => {
   };
 
   const isLoading = timelineQuery.isLoading || contextQuery.isLoading;
-  const isError = timelineQuery.isError || contextQuery.isError;
+  const isError = timelineQuery.isError || (contextQuery.isError && contextQuery.error?.response?.status !== 404);
 
   // Sync notes from query once loaded
   useEffect(() => {
