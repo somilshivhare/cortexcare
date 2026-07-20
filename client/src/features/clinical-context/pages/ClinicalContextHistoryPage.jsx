@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { usePatientContexts } from '../hooks/useClinicalContext.js';
+import { useAuth } from '../../auth/hooks/useAuth.js';
 import ClinicalContextDetail from '../../../components/ClinicalContextDetail.jsx';
 import PageHeader from '../../../components/PageHeader.jsx';
 import PageContainer from '../../../components/PageContainer.jsx';
@@ -9,13 +11,29 @@ import { SkeletonCard, SkeletonLine } from '../../../components/Skeleton.jsx';
 import { Activity, Brain, Calendar, ShieldAlert } from 'lucide-react';
 
 const ClinicalContextHistoryPage = () => {
-  const { data, isLoading, isError, error, refetch } = usePatientContexts();
+  const { patientId } = useParams();
+  const { user } = useAuth();
+  const isDoctor = user?.role === 'DOCTOR';
+
+  const { data, isLoading, isError, error, refetch } = usePatientContexts(patientId);
   const [selectedContextId, setSelectedContextId] = useState(null);
+
+  const title = isDoctor ? 'Patient Medical Record' : 'Medical Records';
+  const breadcrumbs = isDoctor
+    ? [
+        { name: 'Workspace', path: '/doctor/dashboard' },
+        { name: 'Patient Directory', path: '/doctor/patients' },
+        { name: 'Medical Record' },
+      ]
+    : [
+        { name: 'Workspace', path: '/patient/dashboard' },
+        { name: 'Health History' },
+      ];
 
   if (isLoading) {
     return (
       <PageContainer>
-        <PageHeader title="Medical Records" breadcrumbs={[{ name: 'Workspace', path: '/patient/dashboard' }, { name: 'Health History' }]} />
+        <PageHeader title={title} breadcrumbs={breadcrumbs} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="space-y-4">
             <SkeletonCard className="h-20" />
@@ -33,7 +51,7 @@ const ClinicalContextHistoryPage = () => {
   if (isError) {
     return (
       <PageContainer>
-        <PageHeader title="Medical Records" breadcrumbs={[{ name: 'Workspace', path: '/patient/dashboard' }, { name: 'Health History' }]} />
+        <PageHeader title={title} breadcrumbs={breadcrumbs} />
         <ErrorState title="Failed to Load History" message={error?.message} onRetry={refetch} />
       </PageContainer>
     );
@@ -52,17 +70,18 @@ const ClinicalContextHistoryPage = () => {
   return (
     <PageContainer>
       <PageHeader 
-        title="Medical Records" 
-        breadcrumbs={[
-          { name: 'Workspace', path: '/patient/dashboard' }, 
-          { name: 'Health History' }
-        ]} 
+        title={title} 
+        breadcrumbs={breadcrumbs} 
       />
 
       {list.length === 0 ? (
         <EmptyState
           title="No Clinical Contexts Available"
-          description="Your medical histories and transcripts will display here once you complete a consultation."
+          description={
+            isDoctor
+              ? 'This patient has no clinical history or summaries registered yet.'
+              : 'Your medical histories and transcripts will display here once you complete a consultation.'
+          }
           icon={Brain}
         />
       ) : (

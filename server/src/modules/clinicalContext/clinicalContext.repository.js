@@ -111,3 +111,33 @@ export const findPastHistory = async (patientId, excludeConsultationId) => {
     },
   });
 };
+
+/**
+ * Fetch all clinical contexts associated with a specific patient ID.
+ * @param {string} patientId
+ * @returns {Promise<Array>}
+ */
+export const findAllByPatientId = async (patientId) => {
+  return await prisma.clinicalContext.findMany({
+    where: {
+      consultation: {
+        patientId,
+      },
+    },
+    include: {
+      consultation: {
+        include: {
+          doctorNote: true,
+          attachments: {
+            orderBy: {
+              uploadedAt: 'asc',
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+};

@@ -20,6 +20,7 @@ router.get('/dashboard', doctorController.getDashboard);
 
 // Patient registry/directory route
 router.get('/patients', doctorController.getPatients);
+router.get('/patients/:patientId/clinical-context', doctorController.getPatientClinicalHistory);
 
 // Consultation routing
 router.get('/consultations', doctorController.getConsultations);

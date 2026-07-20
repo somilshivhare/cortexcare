@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { getPatientContextsApi, getConsultationContextApi } from '../api/clinicalContext.api.js';
+import { getPatientContextsApi, getConsultationContextApi, getDoctorPatientContextsApi } from '../api/clinicalContext.api.js';
 
-export const usePatientContexts = () => {
+export const usePatientContexts = (patientId) => {
   return useQuery({
-    queryKey: ['clinical-contexts', 'patient'],
-    queryFn: getPatientContextsApi,
+    queryKey: ['clinical-contexts', patientId || 'patient'],
+    queryFn: () => patientId ? getDoctorPatientContextsApi(patientId) : getPatientContextsApi(),
   });
 };
 

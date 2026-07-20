@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useClinicDetails, useClinicMembers, useCreateClinic, useJoinClinic, useLeaveClinic, useRegenerateClinicCode } from '../hooks/useClinic.js';
 import { useAuth } from '../../auth/hooks/useAuth.js';
 import { useToast } from '../../../contexts/ToastContext.jsx';
@@ -11,6 +12,7 @@ import Avatar from '../../../components/Avatar.jsx';
 import { Building2, Plus, ArrowRight, UserCheck, Shield, Key, ClipboardList, Clock, Phone, MapPin, Search } from 'lucide-react';
 
 const ClinicPage = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { addToast } = useToast();
 
@@ -548,10 +550,23 @@ const ClinicPage = () => {
                 )}
               </div>
 
+              {isDoctor && selectedMember.type === 'PATIENT' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedMember(null);
+                    navigate(`/doctor/patients/${selectedMember.data.id}/clinical-context`);
+                  }}
+                  className="w-full rounded-lg bg-indigo-650 py-2 text-xs font-bold text-white hover:bg-indigo-755 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors mb-2 cursor-pointer"
+                >
+                  View Full Medical Record
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={() => setSelectedMember(null)}
-                className="w-full rounded-lg bg-neutral-950 py-2 text-xs font-bold text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 transition-colors"
+                className="w-full rounded-lg bg-neutral-950 py-2 text-xs font-bold text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 transition-colors cursor-pointer"
               >
                 Close View
               </button>

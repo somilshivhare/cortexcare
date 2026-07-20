@@ -215,7 +215,26 @@ export const uploadFile = async (req, res) => {
       attachment: result.attachment,
     });
   } catch (err) {
-    console.error('Doctor upload attachment crash:', err);
+    console.error('Upload doctor attachment crash:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+};
+
+/**
+ * Handle GET /patients/:patientId/clinical-context
+ */
+export const getPatientClinicalHistory = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    const result = await doctorService.getPatientClinicalHistory(req.user.id, patientId);
+    if (!result.success) {
+      return res.status(result.status || 400).json({ error: result.error });
+    }
+    return res.status(200).json({
+      clinicalContexts: result.clinicalContexts,
+    });
+  } catch (err) {
+    console.error('Get patient clinical history crash:', err);
     return res.status(500).json({ error: 'Internal server error.' });
   }
 };

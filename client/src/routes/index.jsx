@@ -140,6 +140,7 @@ export const router = createBrowserRouter([
     children: [
       { path: 'dashboard', element: <DoctorDashboard /> },
       { path: 'patients', element: <DoctorPatientsPage /> },
+      { path: 'patients/:patientId/clinical-context', element: <ClinicalContextHistoryPage /> },
       { path: 'clinic', element: <ClinicPage /> },
       { path: 'profile', element: <ProfilePage /> },
       { path: 'settings', element: <SettingsPage /> },

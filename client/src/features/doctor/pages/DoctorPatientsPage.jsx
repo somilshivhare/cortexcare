@@ -23,7 +23,12 @@ const PatientRow = ({ patient, onViewDetails }) => {
       <tr className="hover:bg-neutral-50/50 dark:hover:bg-neutral-805/20 transition-colors">
         <td className="whitespace-nowrap px-6 py-4 font-bold text-neutral-900 dark:text-white flex items-center gap-3">
           <Avatar src={avatar} name={displayName} size="sm" />
-          <span>{displayName}</span>
+          <button
+            onClick={() => navigate(`/doctor/patients/${patient.id}/clinical-context`)}
+            className="hover:underline hover:text-indigo-650 dark:hover:text-indigo-400 text-left cursor-pointer"
+          >
+            {displayName}
+          </button>
         </td>
         <td className="px-6 py-4">
           <div className="space-y-1">
@@ -132,6 +137,7 @@ const PatientRow = ({ patient, onViewDetails }) => {
 };
 
 const DoctorPatientsPage = () => {
+  const navigate = useNavigate();
   const { data, isLoading, isError, error, refetch } = useClinicPatients();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPatient, setSelectedPatient] = useState(null);
@@ -297,8 +303,16 @@ const DoctorPatientsPage = () => {
 
               <button
                 type="button"
+                onClick={() => navigate(`/doctor/patients/${selectedPatient.id}/clinical-context`)}
+                className="w-full rounded-lg bg-indigo-650 py-2 text-xs font-bold text-white hover:bg-indigo-755 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors mb-2 cursor-pointer"
+              >
+                View Full Medical Record
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setSelectedPatient(null)}
-                className="w-full rounded-lg bg-neutral-950 py-2 text-xs font-bold text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 transition-colors"
+                className="w-full rounded-lg bg-neutral-950 py-2 text-xs font-bold text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 transition-colors cursor-pointer"
               >
                 Close View
               </button>

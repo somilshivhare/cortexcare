@@ -2,6 +2,8 @@ import * as doctorRepository from './doctor.repository.js';
 import * as consultationRepository from '../consultation/consultation.repository.js';
 import { getClinicalContext } from '../clinicalContext/clinicalContext.service.js';
 import { saveAttachmentDirect } from '../consultation/services/attachment.service.js';
+import * as clinicalContextRepository from '../clinicalContext/clinicalContext.repository.js';
+import prisma from '../../config/prisma.js';
 
 /**
  * Helper to fetch and verify doctor profile exists.
@@ -274,5 +276,43 @@ export const uploadAttachment = async (userId, consultationId, file) => {
   return {
     success: true,
     attachment,
+  };
+};
+
+/**
+ * Expose longitudinal patient clinical history to doctor.
+ */
+export const getPatientClinicalHistory = async (userId, patientId) => {
+  const verify = await getVerifiedDoctor(userId);
+  if (!verify.success) return verify;
+
+  // 1. Fetch patient
+  const patient = await prisma.patient.findUnique({
+    where: { id: patientId },
+  });
+
+  if (!patient) {
+    return {
+      success: false,
+      status: 404,
+      error: 'Patient not found.',
+    };
+  }
+
+  // 2. Validate clinic affiliation
+  if (patient.clinicId !== verify.doctor.clinicId) {
+    return {
+      success: false,
+      status: 403,
+      error: 'Access denied. Patient is not enrolled in your clinic.',
+    };
+  }
+
+  // 3. Fetch all clinical contexts for this patient
+  const clinicalContexts = await clinicalContextRepository.findAllByPatientId(patientId);
+
+  return {
+    success: true,
+    clinicalContexts,
   };
 };
