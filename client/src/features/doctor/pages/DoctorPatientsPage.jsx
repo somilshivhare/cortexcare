@@ -247,11 +247,41 @@ const DoctorPatientsPage = () => {
               <div className="w-full text-left space-y-3.5 border-t border-neutral-100 pt-4 dark:border-neutral-800 text-xs">
                 <div className="space-y-0.5">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Email Address</span>
-                  <span className="text-neutral-900 dark:text-white font-medium">{selectedPatient.user?.email}</span>
+                  <span className="text-neutral-900 dark:text-white font-medium">{selectedPatient.user?.email || 'Not provided'}</span>
                 </div>
                 <div className="space-y-0.5">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Phone Number</span>
                   <span className="text-neutral-900 dark:text-white font-medium">{selectedPatient.phoneNumber || 'Not provided'}</span>
+                </div>
+                <div className="space-y-0.5 flex justify-between items-center gap-4">
+                  <div className="flex-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Date of Birth</span>
+                    <span className="text-neutral-900 dark:text-white font-medium">{selectedPatient.dob || 'Not provided'}</span>
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Gender</span>
+                    <span className="text-neutral-900 dark:text-white font-medium">{selectedPatient.gender || 'Not provided'}</span>
+                  </div>
+                </div>
+                <div className="space-y-0.5 flex justify-between items-center gap-4">
+                  <div className="flex-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Blood Group</span>
+                    <span className="text-neutral-900 dark:text-white font-medium">{selectedPatient.bloodGroup || 'Not provided'}</span>
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Height / Weight</span>
+                    <span className="text-neutral-900 dark:text-white font-medium">
+                      {selectedPatient.height || '--'} / {selectedPatient.weight || '--'}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Allergies</span>
+                  <span className="text-neutral-900 dark:text-white font-medium">{selectedPatient.allergies || 'None reported'}</span>
+                </div>
+                <div className="space-y-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Emergency Contact</span>
+                  <span className="text-neutral-900 dark:text-white font-medium">{selectedPatient.emergencyContact || 'Not provided'}</span>
                 </div>
                 <div className="space-y-0.5">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Home Address</span>

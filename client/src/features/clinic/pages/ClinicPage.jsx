@@ -448,9 +448,33 @@ const ClinicPage = () => {
                 {selectedMember.type === 'DOCTOR' ? (
                   <>
                     <div className="space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Email Address</span>
+                      <span className="text-neutral-900 dark:text-white font-medium">
+                        {selectedMember.data.user?.email || 'Not provided'}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Phone Number</span>
+                      <span className="text-neutral-900 dark:text-white font-medium">
+                        {selectedMember.data.phoneNumber || 'Not provided'}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">License Number</span>
                       <span className="text-neutral-900 dark:text-white font-medium">
                         {selectedMember.data.licenseNumber || 'Not provided'}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Qualification</span>
+                      <span className="text-neutral-900 dark:text-white font-medium">
+                        {selectedMember.data.qualification || 'Not provided'}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Experience</span>
+                      <span className="text-neutral-900 dark:text-white font-medium">
+                        {selectedMember.data.experience || 'Not provided'}
                       </span>
                     </div>
                     <div className="space-y-1">
@@ -472,6 +496,46 @@ const ClinicPage = () => {
                       <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Phone Number</span>
                       <span className="text-neutral-900 dark:text-white font-medium">
                         {selectedMember.data.phoneNumber || 'Not provided'}
+                      </span>
+                    </div>
+                    <div className="space-y-1 flex justify-between items-center gap-4">
+                      <div className="flex-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Date of Birth</span>
+                        <span className="text-neutral-900 dark:text-white font-medium">
+                          {selectedMember.data.dob || 'Not provided'}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Gender</span>
+                        <span className="text-neutral-900 dark:text-white font-medium">
+                          {selectedMember.data.gender || 'Not provided'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="space-y-1 flex justify-between items-center gap-4">
+                      <div className="flex-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Blood Group</span>
+                        <span className="text-neutral-900 dark:text-white font-medium">
+                          {selectedMember.data.bloodGroup || 'Not provided'}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Height / Weight</span>
+                        <span className="text-neutral-900 dark:text-white font-medium">
+                          {selectedMember.data.height || '--'} / {selectedMember.data.weight || '--'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Allergies</span>
+                      <span className="text-neutral-900 dark:text-white font-medium">
+                        {selectedMember.data.allergies || 'None reported'}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Emergency Contact</span>
+                      <span className="text-neutral-900 dark:text-white font-medium">
+                        {selectedMember.data.emergencyContact || 'Not provided'}
                       </span>
                     </div>
                     <div className="space-y-1">

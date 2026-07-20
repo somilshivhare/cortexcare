@@ -68,16 +68,44 @@ export const findClinicMembers = async (clinicId) => {
       doctors: {
         select: {
           id: true,
+          userId: true,
           firstName: true,
           lastName: true,
           specialty: true,
+          licenseNumber: true,
+          qualification: true,
+          experience: true,
+          bio: true,
+          phoneNumber: true,
+          avatarUrl: true,
+          user: {
+            select: {
+              email: true,
+            },
+          },
         },
       },
       patients: {
         select: {
           id: true,
+          userId: true,
           firstName: true,
           lastName: true,
+          phoneNumber: true,
+          address: true,
+          dob: true,
+          gender: true,
+          bloodGroup: true,
+          height: true,
+          weight: true,
+          allergies: true,
+          emergencyContact: true,
+          avatarUrl: true,
+          user: {
+            select: {
+              email: true,
+            },
+          },
         },
       },
     },
