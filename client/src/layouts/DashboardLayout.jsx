@@ -42,6 +42,31 @@ const DashboardLayout = () => {
   // Read notifications
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
+  const handleNotificationClick = (notification) => {
+    // 1. Mark as read
+    markAsRead(notification.id);
+    
+    // 2. Close drawer
+    setNotificationsOpen(false);
+
+    // 3. Navigate based on type
+    const rolePrefix = isDoctor ? '/doctor' : '/patient';
+    const title = notification.title.toLowerCase();
+
+    if (title.includes('consent')) {
+      navigate(`${rolePrefix}/settings`);
+    } else if (title.includes('clinic')) {
+      navigate(`${rolePrefix}/clinic`);
+    } else if (title.includes('analysis finalized') || title.includes('gemini')) {
+      const consultId = notification.consultationId || '5928';
+      if (isDoctor) {
+        navigate(`/doctor/consultation/${consultId}`);
+      } else {
+        navigate(`/patient/timeline/${consultId}`);
+      }
+    }
+  };
+
   // Navigation items configured by user role
   const patientNavItems = [
     { name: 'Dashboard', path: '/patient/dashboard', icon: LayoutDashboard, isComingSoon: false },
@@ -54,6 +79,7 @@ const DashboardLayout = () => {
 
   const doctorNavItems = [
     { name: 'Dashboard', path: '/doctor/dashboard', icon: LayoutDashboard, isComingSoon: false },
+    { name: 'Patients', path: '/doctor/patients', icon: User, isComingSoon: false },
     { name: 'Clinic', path: '/doctor/clinic', icon: Hospital, isComingSoon: false },
     { name: 'Profile', path: '/doctor/profile', icon: User, isComingSoon: false },
     { name: 'Settings', path: '/doctor/settings', icon: Settings, isComingSoon: false },
@@ -143,7 +169,7 @@ const DashboardLayout = () => {
       </aside>
 
       {/* 2. Mobile Nav Header Overlay & Menu Drawer */}
-      <div className="flex flex-col flex-1 md:pl-64">
+      <div className="flex flex-col flex-1 md:pl-64 min-w-0">
         
         {/* Top Navbar */}
         <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-neutral-200/80 bg-white/80 backdrop-blur-md px-4 sm:px-6 lg:px-8 dark:border-neutral-800/80 dark:bg-neutral-900/80">
@@ -189,7 +215,7 @@ const DashboardLayout = () => {
         </header>
 
         {/* 3. Main Outlet Page Content */}
-        <main className="flex-1 overflow-y-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 overflow-y-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl w-full mx-auto min-w-0">
           <Outlet />
         </main>
       </div>
@@ -267,7 +293,7 @@ const DashboardLayout = () => {
         isOpen={notificationsOpen}
         onClose={() => setNotificationsOpen(false)}
         notifications={notifications}
-        onMarkRead={markAsRead}
+        onNotificationClick={handleNotificationClick}
         onMarkAllRead={markAllAsRead}
       />
     </div>

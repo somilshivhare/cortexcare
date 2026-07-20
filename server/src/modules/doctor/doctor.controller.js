@@ -170,3 +170,52 @@ export const getContext = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error.' });
   }
 };
+
+/**
+ * Handle GET /patients
+ * Fetch all patients in the doctor's clinic.
+ */
+export const getPatients = async (req, res) => {
+  try {
+    const result = await doctorService.getClinicPatients(req.user.id);
+
+    if (!result.success) {
+      return res.status(result.status || 400).json({ error: result.error });
+    }
+
+    return res.status(200).json({
+      patients: result.patients,
+    });
+  } catch (err) {
+    console.error('Get clinic patients crash:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+};
+
+/**
+ * Handle POST /consultations/:consultationId/attachments
+ */
+export const uploadFile = async (req, res) => {
+  try {
+    const { consultationId } = req.params;
+    const { file } = req;
+
+    if (!file) {
+      return res.status(400).json({ error: 'A file attachment is required.' });
+    }
+
+    const result = await doctorService.uploadAttachment(req.user.id, consultationId, file);
+
+    if (!result.success) {
+      return res.status(result.status || 400).json({ error: result.error });
+    }
+
+    return res.status(201).json({
+      message: 'Attachment uploaded successfully.',
+      attachment: result.attachment,
+    });
+  } catch (err) {
+    console.error('Doctor upload attachment crash:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+};

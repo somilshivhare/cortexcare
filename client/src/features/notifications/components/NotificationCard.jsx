@@ -1,7 +1,7 @@
 import React from 'react';
 import { Bell, Heart, ShieldAlert, Award, X } from 'lucide-react';
 
-const NotificationCard = ({ notification, onMarkRead }) => {
+const NotificationCard = ({ notification, onClick }) => {
   const { id, title, description, time, read, type } = notification;
 
   const icons = {
@@ -18,11 +18,11 @@ const NotificationCard = ({ notification, onMarkRead }) => {
 
   return (
     <div
-      onClick={() => !read && onMarkRead(id)}
-      className={`flex items-start gap-3.5 p-4 rounded-xl border transition-all duration-200 select-none ${
+      onClick={onClick}
+      className={`flex items-start gap-3.5 p-4 rounded-xl border transition-all duration-200 select-none cursor-pointer hover:border-neutral-350 dark:hover:border-neutral-600 ${
         read 
           ? 'bg-white border-neutral-150 text-neutral-600 dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-450' 
-          : `shadow-2xs cursor-pointer border hover:border-neutral-350 dark:hover:border-neutral-600 ${bgStyles[type] || 'bg-white border-neutral-200 dark:bg-neutral-900 dark:border-neutral-800'}`
+          : `shadow-2xs border ${bgStyles[type] || 'bg-white border-neutral-200 dark:bg-neutral-900 dark:border-neutral-800'}`
       }`}
     >
       <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${

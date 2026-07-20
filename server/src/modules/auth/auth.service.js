@@ -47,7 +47,7 @@ export const verifyRefreshToken = (token) => {
 /**
  * Register a new user (patient or doctor).
  */
-export const registerUser = async ({ email, password, role, firstName, lastName, specialty }) => {
+export const registerUser = async ({ email, password, role, firstName, lastName, specialty, clinicCode, clinicName }) => {
   // 1. Check if email is already taken
   const existingUser = await authRepository.findUserByEmail(email);
   if (existingUser) {
@@ -61,29 +61,39 @@ export const registerUser = async ({ email, password, role, firstName, lastName,
   // 2. Hash the password
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-  // 3. Save user and profile to DB
-  const user = await authRepository.createUser({
-    email,
-    passwordHash,
-    role,
-    firstName,
-    lastName,
-    specialty,
-  });
+  try {
+    // 3. Save user, profile, and optional clinic to DB
+    const user = await authRepository.createUser({
+      email,
+      passwordHash,
+      role,
+      firstName,
+      lastName,
+      specialty,
+      clinicCode,
+      clinicName,
+    });
 
-  // 4. Exclude passwordHash from returned user object for safety
-  const { passwordHash: _, ...safeUser } = user;
+    // 4. Exclude passwordHash from returned user object for safety
+    const { passwordHash: _, ...safeUser } = user;
 
-  // 5. Generate both authentication tokens
-  const accessToken = generateAccessToken(user);
-  const refreshToken = generateRefreshToken(user);
+    // 5. Generate both authentication tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
 
-  return {
-    success: true,
-    user: safeUser,
-    accessToken,
-    refreshToken,
-  };
+    return {
+      success: true,
+      user: safeUser,
+      accessToken,
+      refreshToken,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      status: err.message.includes('Clinic not found') ? 404 : 400,
+      error: err.message,
+    };
+  }
 };
 
 /**
@@ -143,4 +153,21 @@ export const getUserProfile = async (id) => {
     success: true,
     user: safeUser,
   };
+};
+
+/**
+ * Delete user account.
+ */
+export const deleteUser = async (id) => {
+  try {
+    const user = await authRepository.findUserById(id);
+    if (!user) {
+      return { success: false, status: 404, error: 'User not found.' };
+    }
+    await authRepository.deleteUser(id);
+    return { success: true };
+  } catch (err) {
+    console.error('deleteUser crash:', err);
+    return { success: false, error: 'Internal database error.' };
+  }
 };

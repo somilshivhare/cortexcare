@@ -6,10 +6,10 @@ import * as clinicService from './clinic.service.js';
  */
 export const create = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, address, phoneNumber, timings, logoUrl } = req.body;
     const { id: userId } = req.user;
 
-    const result = await clinicService.createClinic(userId, name);
+    const result = await clinicService.createClinic(userId, { name, address, phoneNumber, timings, logoUrl });
 
     if (!result.success) {
       return res.status(result.status || 400).json({ error: result.error });
@@ -78,9 +78,10 @@ export const getClinic = async (req, res) => {
  */
 export const getMembers = async (req, res) => {
   try {
-    const { id: userId } = req.user;
+    const userId = req.user.id;
+    const role = req.user.role;
 
-    const result = await clinicService.getMembersList(userId);
+    const result = await clinicService.getMembersList(userId, role);
 
     if (!result.success) {
       return res.status(result.status || 400).json({ error: result.error });

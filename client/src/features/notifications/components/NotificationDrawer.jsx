@@ -4,7 +4,7 @@ import { X, Bell, CheckSquare } from 'lucide-react';
 import NotificationCard from './NotificationCard.jsx';
 import EmptyState from '../../../components/EmptyState.jsx';
 
-const NotificationDrawer = ({ isOpen, onClose, notifications = [], onMarkRead, onMarkAllRead }) => {
+const NotificationDrawer = ({ isOpen, onClose, notifications = [], onNotificationClick, onMarkAllRead }) => {
   if (!isOpen) return null;
 
   return (
@@ -61,7 +61,7 @@ const NotificationDrawer = ({ isOpen, onClose, notifications = [], onMarkRead, o
                 <NotificationCard
                   key={n.id}
                   notification={n}
-                  onMarkRead={onMarkRead}
+                  onClick={() => onNotificationClick(n)}
                 />
               ))
             )}

@@ -21,11 +21,11 @@ export const findClinicById = async (id) => {
 /**
  * Create a clinic and associate the creating doctor in a single transaction.
  */
-export const createClinic = async (name, code, doctorUserId) => {
+export const createClinic = async ({ name, address, phoneNumber, timings, logoUrl }, code, doctorUserId) => {
   return await prisma.$transaction(async (tx) => {
     // 1. Create the clinic
     const clinic = await tx.clinic.create({
-      data: { name, code },
+      data: { name, code, address, phoneNumber, timings, logoUrl },
     });
 
     // 2. Assign creating doctor to the clinic

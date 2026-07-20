@@ -2,43 +2,39 @@ import * as timelineRepository from './timeline.repository.js';
 
 /**
  * Retrieve the chronological timeline of events for a single consultation session.
- * @param {string} userId - Requester User ID
- * @param {string} role - Requester User Role (PATIENT or DOCTOR)
- * @param {string} consultationId - Target Consultation ID
  */
 export const getConsultationTimeline = async (userId, role, consultationId) => {
-  // 1. Fetch complete consultation tree
   const consultation = await timelineRepository.findFullConsultationTree(consultationId);
   if (!consultation) {
-    return {
-      success: false,
-      status: 404,
-      error: 'Consultation session not found.',
-    };
+    return { success: false, status: 404, error: 'Consultation session not found.' };
   }
 
-  // 2. Access Control: Patients must own their consultation
   if (role === 'PATIENT' && consultation.patient.userId !== userId) {
-    return {
-      success: false,
-      status: 403,
-      error: 'You do not have permission to view this consultation timeline.',
-    };
+    return { success: false, status: 403, error: 'You do not have permission to view this timeline.' };
   }
 
-  // 3. Access Control: Doctors and Patients must belong to the same clinic
   if (role === 'DOCTOR') {
     const doctor = await timelineRepository.findDoctorByUserId(userId);
-    if (!doctor || !doctor.clinicId || doctor.clinicId !== consultation.patient.clinicId) {
+    if (!doctor) {
       return {
         success: false,
         status: 403,
-        error: 'Access denied. You can only view timelines of patients belonging to your clinic.',
+        error: 'Doctor profile not found.',
+      };
+    }
+
+    const isAssigned = consultation.doctorId === doctor.id;
+    const shareClinic = doctor.clinicId === consultation.patient.clinicId;
+
+    if (!isAssigned && !shareClinic) {
+      return {
+        success: false,
+        status: 403,
+        error: 'Access denied. You can only view timelines of patients in your clinic.',
       };
     }
   }
 
-  // 4. Calculate Summary details
   let durationSeconds = 0;
   if (consultation.startedAt && consultation.endedAt) {
     durationSeconds = Math.round((new Date(consultation.endedAt) - new Date(consultation.startedAt)) / 1000);
@@ -46,22 +42,18 @@ export const getConsultationTimeline = async (userId, role, consultationId) => {
 
   const summary = {
     duration: durationSeconds,
-    totalMessages: consultation.chunks.length,
+    totalMessages: consultation.messages.length,
     status: consultation.status,
     reviewStatus: consultation.reviewStatus,
   };
 
-  // 5. Gather all chronological events
   const events = [];
 
   // Event: Session Created
   events.push({
     type: 'SESSION_CREATED',
     timestamp: consultation.createdAt,
-    data: {
-      patientId: consultation.patientId,
-      status: 'SETUP',
-    },
+    data: { patientId: consultation.patientId, status: 'SETUP' },
   });
 
   // Event: Session Started
@@ -69,35 +61,42 @@ export const getConsultationTimeline = async (userId, role, consultationId) => {
     events.push({
       type: 'SESSION_STARTED',
       timestamp: consultation.startedAt,
-      data: {
-        startedAt: consultation.startedAt,
-        status: 'ACTIVE',
-      },
+      data: { startedAt: consultation.startedAt, status: 'ACTIVE' },
     });
   }
 
-  // Events: Transcript Chunks
-  consultation.chunks.forEach((chunk) => {
+  // Events: Transcript Messages
+  consultation.messages.forEach((msg) => {
     events.push({
       type: 'TRANSCRIPT_CHUNK',
-      timestamp: chunk.createdAt,
+      timestamp: msg.createdAt,
       data: {
-        sequence: chunk.sequence,
-        speaker: chunk.speaker,
-        text: chunk.text,
+        sequence: msg.sequence,
+        speaker: msg.speaker,
+        text: msg.text,
       },
     });
   });
 
-  // Event: Session Finalized (locked for processing)
+  // Events: Attachments Uploaded
+  consultation.attachments.forEach((att) => {
+    events.push({
+      type: 'FILE_UPLOADED',
+      timestamp: att.uploadedAt,
+      data: {
+        fileName: att.fileName,
+        fileType: att.fileType,
+        cloudinaryUrl: att.cloudinaryUrl,
+      },
+    });
+  });
+
+  // Event: Session Finalized
   if (consultation.endedAt) {
     events.push({
       type: 'SESSION_FINALIZED',
       timestamp: consultation.endedAt,
-      data: {
-        endedAt: consultation.endedAt,
-        status: 'PROCESSING',
-      },
+      data: { endedAt: consultation.endedAt, status: 'PROCESSING' },
     });
   }
 
@@ -107,12 +106,20 @@ export const getConsultationTimeline = async (userId, role, consultationId) => {
       type: 'AI_ANALYSIS_COMPLETED',
       timestamp: consultation.clinicalContext.createdAt,
       data: {
-        summary: consultation.clinicalContext.summary,
+        chiefComplaint: consultation.clinicalContext.chiefComplaint,
+        presentIllness: consultation.clinicalContext.presentIllness,
         symptoms: consultation.clinicalContext.symptoms,
-        riskFlags: consultation.clinicalContext.riskFlags,
-        recommendations: consultation.clinicalContext.recommendations,
-        mood: consultation.clinicalContext.mood,
-        confidenceScore: consultation.clinicalContext.confidenceScore,
+        currentMedications: consultation.clinicalContext.currentMedications,
+        medications: consultation.clinicalContext.currentMedications, // Backward compatibility fallback
+        allergies: consultation.clinicalContext.allergies,
+        pastMedicalHistory: consultation.clinicalContext.pastMedicalHistory,
+        medicalHistory: consultation.clinicalContext.pastMedicalHistory, // Backward compatibility fallback
+        lifestyle: consultation.clinicalContext.lifestyle,
+        timeline: consultation.clinicalContext.timeline,
+        riskFactors: consultation.clinicalContext.riskFactors,
+        riskLevel: consultation.clinicalContext.riskLevel,
+        recommendedSpecialist: consultation.clinicalContext.recommendedSpecialist,
+        doctorSummary: consultation.clinicalContext.doctorSummary,
       },
     });
   }
@@ -142,7 +149,7 @@ export const getConsultationTimeline = async (userId, role, consultationId) => {
     });
   }
 
-  // 6. Sort all gathered events chronologically
+  // Sort chronologically
   events.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
   return {

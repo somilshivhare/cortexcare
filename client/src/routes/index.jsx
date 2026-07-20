@@ -12,10 +12,12 @@ import { ClinicalContextHistoryPage } from '../features/clinical-context/index.j
 import { TimelinePage } from '../features/timeline/index.js';
 import { ClinicPage } from '../features/clinic/index.js';
 import { ProfilePage, SettingsPage } from '../features/profile/index.js';
-import { DoctorDashboard, DoctorConsultationDetailPage } from '../features/doctor/index.js';
-import { VoiceConsultationPage } from '../features/consultation/index.js';
+import { DoctorDashboard, DoctorConsultationDetailPage, DoctorPatientsPage } from '../features/doctor/index.js';
+import { AIConsultationPage } from '../features/consultation/index.js';
 import DashboardLayout from '../layouts/DashboardLayout.jsx';
-import { AuthGuard, GuestGuard, RoleGuard } from './guards.jsx';
+import { AuthGuard, GuestGuard, RoleGuard, OnboardingGuard } from './guards.jsx';
+import PatientOnboardingPage from '../features/auth/pages/PatientOnboardingPage.jsx';
+import DoctorOnboardingPage from '../features/auth/pages/DoctorOnboardingPage.jsx';
 import LandingPage from '../features/landing/pages/LandingPage.jsx';
 import { Sparkles, ArrowLeft } from 'lucide-react';
 
@@ -66,19 +68,33 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // Protected Patient Routes (guarded by AuthGuard + RoleGuard)
+  // Patient Onboarding Route
+  {
+    path: '/patient/onboarding',
+    element: (
+      <AuthGuard>
+        <RoleGuard allowedRole="PATIENT">
+          <PatientOnboardingPage />
+        </RoleGuard>
+      </AuthGuard>
+    )
+  },
+
+  // Protected Patient Routes (guarded by AuthGuard + RoleGuard + OnboardingGuard)
   {
     path: '/patient',
     element: (
       <AuthGuard>
         <RoleGuard allowedRole="PATIENT">
-          <DashboardLayout />
+          <OnboardingGuard allowedRole="PATIENT">
+            <DashboardLayout />
+          </OnboardingGuard>
         </RoleGuard>
       </AuthGuard>
     ),
     children: [
       { path: 'dashboard', element: <PatientDashboard /> },
-      { path: 'consultation', element: <VoiceConsultationPage /> },
+      { path: 'consultation/:consultationId?', element: <AIConsultationPage /> },
       { path: 'clinical-context', element: <ClinicalContextHistoryPage /> },
       {
         path: 'timeline',
@@ -97,18 +113,33 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // Protected Doctor Routes (guarded by AuthGuard + RoleGuard)
+  // Doctor Onboarding Route
+  {
+    path: '/doctor/onboarding',
+    element: (
+      <AuthGuard>
+        <RoleGuard allowedRole="DOCTOR">
+          <DoctorOnboardingPage />
+        </RoleGuard>
+      </AuthGuard>
+    )
+  },
+
+  // Protected Doctor Routes (guarded by AuthGuard + RoleGuard + OnboardingGuard)
   {
     path: '/doctor',
     element: (
       <AuthGuard>
         <RoleGuard allowedRole="DOCTOR">
-          <DashboardLayout />
+          <OnboardingGuard allowedRole="DOCTOR">
+            <DashboardLayout />
+          </OnboardingGuard>
         </RoleGuard>
       </AuthGuard>
     ),
     children: [
       { path: 'dashboard', element: <DoctorDashboard /> },
+      { path: 'patients', element: <DoctorPatientsPage /> },
       { path: 'clinic', element: <ClinicPage /> },
       { path: 'profile', element: <ProfilePage /> },
       { path: 'settings', element: <SettingsPage /> },
@@ -116,6 +147,8 @@ export const router = createBrowserRouter([
       { path: '', element: <Navigate to="dashboard" replace /> },
     ],
   },
+
+
 
   // Catch-all Redirects
   {

@@ -26,8 +26,15 @@ export const getClinicalContext = async (userId, role, consultationId) => {
     };
   }
 
-  // Exclude structural relationship payload helper details from response object
-  const { consultation: _, ...cleanContext } = context;
+  // Exclude structural relationship payload helper details from response object for patients.
+  // For doctors, we retain the consultation relationship (which contains patient demographics).
+  let cleanContext;
+  if (role === 'DOCTOR') {
+    cleanContext = context;
+  } else {
+    const { consultation: _, ...rest } = context;
+    cleanContext = rest;
+  }
 
   return {
     success: true,

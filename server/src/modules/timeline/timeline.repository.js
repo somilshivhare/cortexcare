@@ -1,7 +1,7 @@
 import prisma from '../../config/prisma.js';
 
 /**
- * Fetch the complete consultation tree containing chunks, context, and notes.
+ * Fetch the complete consultation tree containing messages, attachments, context, and notes.
  * @param {string} id - Consultation ID
  */
 export const findFullConsultationTree = async (id) => {
@@ -27,9 +27,14 @@ export const findFullConsultationTree = async (id) => {
           specialty: true,
         },
       },
-      chunks: {
+      messages: {
         orderBy: {
           sequence: 'asc',
+        },
+      },
+      attachments: {
+        orderBy: {
+          uploadedAt: 'asc',
         },
       },
       clinicalContext: true,

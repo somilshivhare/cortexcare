@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../auth/hooks/useAuth.js';
 import {
   getPatientProfileApi,
   updatePatientProfileApi,
@@ -9,32 +10,39 @@ import {
 
 export const useProfile = (role) => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const isDoctor = role === 'DOCTOR';
+  const userId = user?.id || '';
 
   const profileQuery = useQuery({
     queryKey: ['profile', role],
     queryFn: isDoctor ? getDoctorProfileApi : getPatientProfileApi,
+    enabled: role === 'DOCTOR' || role === 'PATIENT',
   });
 
   const updateMutation = useMutation({
     mutationFn: isDoctor ? updateDoctorProfileApi : updatePatientProfileApi,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile', role] });
-      queryClient.invalidateQueries({ queryKey: ['patient', 'profile'] });
+      if (role === 'DOCTOR' || role === 'PATIENT') {
+        queryClient.invalidateQueries({ queryKey: ['profile', role] });
+        queryClient.invalidateQueries({ queryKey: ['patient', 'profile'] });
+      }
     },
   });
 
   // Simulated Cloudinary avatar link persistence
   const [avatarUrl, setAvatarUrl] = useState(() => {
-    return localStorage.getItem(`avatar_${role}`) || '';
+    const key = userId ? `avatar_${role}_${userId}` : `avatar_${role}`;
+    return localStorage.getItem(key) || '';
   });
 
   const updateAvatar = (url) => {
+    const key = userId ? `avatar_${role}_${userId}` : `avatar_${role}`;
     setAvatarUrl(url);
     if (url) {
-      localStorage.setItem(`avatar_${role}`, url);
+      localStorage.setItem(key, url);
     } else {
-      localStorage.removeItem(`avatar_${role}`);
+      localStorage.removeItem(key);
     }
   };
 

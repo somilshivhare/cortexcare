@@ -14,7 +14,7 @@ const COOKIE_OPTIONS = {
  */
 export const register = async (req, res) => {
   try {
-    const { email, password, role, firstName, lastName, specialty } = req.body;
+    const { email, password, role, firstName, lastName, specialty, clinicCode, clinicName } = req.body;
 
     const result = await authService.registerUser({
       email,
@@ -23,6 +23,8 @@ export const register = async (req, res) => {
       firstName,
       lastName,
       specialty,
+      clinicCode,
+      clinicName,
     });
 
     if (!result.success) {
@@ -143,6 +145,24 @@ export const getMe = async (req, res) => {
     });
   } catch (err) {
     console.error('Get profile controller crash:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+};
+
+/**
+ * Handle DELETE /account
+ */
+export const deleteAccount = async (req, res) => {
+  try {
+    const result = await authService.deleteUser(req.user.id);
+    if (!result.success) {
+      return res.status(result.status || 400).json({ error: result.error });
+    }
+    // Clear cookie
+    res.clearCookie('refreshToken', COOKIE_OPTIONS);
+    return res.status(200).json({ message: 'Account successfully deleted.' });
+  } catch (err) {
+    console.error('Delete account controller crash:', err);
     return res.status(500).json({ error: 'Internal server error.' });
   }
 };

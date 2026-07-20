@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTimeline } from '../../timeline/hooks/useTimeline.js';
 import { useConsultationContext } from '../../clinical-context/hooks/useClinicalContext.js';
-import { useSaveNotes, useReviewConsultation } from '../hooks/useDoctorDashboard.js';
+import { useSaveNotes, useReviewConsultation, useUploadDoctorAttachment } from '../hooks/useDoctorDashboard.js';
 import { useToast } from '../../../contexts/ToastContext.jsx';
 import PageHeader from '../../../components/PageHeader.jsx';
 import PageContainer from '../../../components/PageContainer.jsx';
@@ -10,7 +10,7 @@ import ErrorState from '../../../components/ErrorState.jsx';
 import StatusBadge from '../../../components/StatusBadge.jsx';
 import ClinicalContextDetail from '../../../components/ClinicalContextDetail.jsx';
 import { SkeletonCard } from '../../../components/Skeleton.jsx';
-import { FileText, Save, CheckCircle, Activity, MessageSquare } from 'lucide-react';
+import { FileText, Save, CheckCircle, Activity, MessageSquare, Paperclip, Upload, ExternalLink } from 'lucide-react';
 
 const DoctorConsultationDetailPage = () => {
   const { consultationId } = useParams();
@@ -24,9 +24,24 @@ const DoctorConsultationDetailPage = () => {
   // Mutations
   const saveNotesMutation = useSaveNotes();
   const reviewMutation = useReviewConsultation();
+  const uploadAttachmentMutation = useUploadDoctorAttachment();
+  const fileInputRef = React.useRef(null);
 
   const [notes, setNotes] = useState('');
   const [activeTab, setActiveTab] = useState('context'); // context, transcript
+
+  const handleUploadFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      await uploadAttachmentMutation.mutateAsync({ consultationId, file });
+      addToast('Attachment uploaded successfully!', 'success');
+      contextQuery.refetch();
+    } catch (err) {
+      addToast(err.response?.data?.error || 'Failed to upload attachment.', 'error');
+    }
+  };
 
   const isLoading = timelineQuery.isLoading || contextQuery.isLoading;
   const isError = timelineQuery.isError || contextQuery.isError;
@@ -152,10 +167,172 @@ const DoctorConsultationDetailPage = () => {
           </div>
 
           {activeTab === 'context' ? (
-            <ClinicalContextDetail
-              clinicalContext={clinicalContext}
-              consultation={clinicalContext?.consultation}
-            />
+            <div className="space-y-6">
+              {/* Patient Identity Information */}
+              <div className="rounded-2xl border border-neutral-200/80 bg-white p-6 dark:border-neutral-800/80 dark:bg-neutral-900 shadow-2xs space-y-4">
+                <h4 className="text-xs font-bold text-neutral-450 uppercase tracking-wider">
+                  Patient Identity Information
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                  <div>
+                    <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block">Full Name</span>
+                    <span className="text-xs font-bold text-neutral-900 dark:text-white mt-0.5 block">
+                      {clinicalContext?.consultation?.patient 
+                        ? `${clinicalContext.consultation.patient.firstName} ${clinicalContext.consultation.patient.lastName}` 
+                        : 'N/A'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block">Phone Number</span>
+                    <span className="text-xs text-neutral-700 dark:text-neutral-300 mt-0.5 block font-semibold">
+                      {clinicalContext?.consultation?.patient?.phoneNumber || 'Not provided'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block">Home Address</span>
+                    <span className="text-xs text-neutral-700 dark:text-neutral-300 mt-0.5 block font-semibold">
+                      {clinicalContext?.consultation?.patient?.address || 'Not provided'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Patient Longitudinal History */}
+              <div className="rounded-2xl border border-neutral-200/80 bg-white p-6 dark:border-neutral-800/80 dark:bg-neutral-900 shadow-2xs space-y-4">
+                <h4 className="text-xs font-bold text-neutral-450 uppercase tracking-wider flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-indigo-500" />
+                  <span>Longitudinal Medical History</span>
+                </h4>
+                
+                {(() => {
+                  const historyList = clinicalContext?.consultation?.patient?.consultations?.filter(
+                    (c) => c.id !== consultationId
+                  ) || [];
+
+                  if (historyList.length === 0) {
+                    return (
+                      <p className="text-xs text-neutral-400 italic">
+                        No previous consultations recorded for this patient.
+                      </p>
+                    );
+                  }
+
+                  return (
+                    <div className="space-y-3 pt-2">
+                      {historyList.map((prev) => {
+                        const dateObj = new Date(prev.createdAt);
+                        const formattedDate = dateObj.toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        });
+
+                        return (
+                          <div
+                            key={prev.id}
+                            className="flex items-center justify-between p-3.5 rounded-xl border border-neutral-150 bg-neutral-50/20 dark:border-neutral-800 dark:bg-neutral-900/20 hover:border-neutral-350 dark:hover:border-neutral-700 transition-all duration-200"
+                          >
+                            <div className="space-y-1">
+                              <span className="text-[10px] font-semibold text-neutral-550 block">
+                                {formattedDate}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <StatusBadge status={prev.status} />
+                                {prev.reviewStatus === 'REVIEWED' && (
+                                  <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 dark:text-emerald-400 px-1.5 py-0.5 rounded">
+                                    Reviewed
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <button
+                              onClick={() => {
+                                navigate(`/doctor/consultation/${prev.id}`);
+                                window.scrollTo(0, 0);
+                              }}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-350 dark:hover:bg-neutral-805 transition-colors"
+                            >
+                              <span>Open Review</span>
+                              <ExternalLink className="h-3 w-3" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Consultation Attachments */}
+              <div className="rounded-2xl border border-neutral-200/80 bg-white p-6 dark:border-neutral-800/80 dark:bg-neutral-900 shadow-2xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-neutral-450 uppercase tracking-wider flex items-center gap-2">
+                    <Paperclip className="h-4 w-4 text-indigo-500" />
+                    <span>Consultation Attachments</span>
+                  </h4>
+                  
+                  {!isReviewed && (
+                    <div>
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadAttachmentMutation.isPending}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-bold text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-350 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
+                      >
+                        <Upload className="h-3.5 w-3.5" />
+                        <span>{uploadAttachmentMutation.isPending ? 'Uploading...' : 'Upload File'}</span>
+                      </button>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleUploadFile}
+                        className="hidden"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Attachments List */}
+                {(!clinicalContext?.consultation?.attachments || clinicalContext.consultation.attachments.length === 0) ? (
+                  <p className="text-xs text-neutral-400 italic">No attachments uploaded for this consultation.</p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                    {clinicalContext.consultation.attachments.map((att) => (
+                      <div
+                        key={att.id}
+                        className="flex items-center justify-between p-3 rounded-xl border border-neutral-150 bg-neutral-50/30 dark:border-neutral-800 dark:bg-neutral-900/30"
+                      >
+                        <div className="min-w-0 flex-1 pr-2">
+                          <span className="text-xs font-bold text-neutral-900 dark:text-white truncate block" title={att.fileName}>
+                            {att.fileName}
+                          </span>
+                          <span className="text-[10px] text-neutral-455 block font-medium">
+                            {att.fileType || 'Unknown type'}
+                          </span>
+                        </div>
+                        
+                        <a
+                          href={att.cloudinaryUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 whitespace-nowrap shrink-0 animate-fadeIn"
+                        >
+                          <span>View File</span>
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <ClinicalContextDetail
+                clinicalContext={clinicalContext}
+                consultation={clinicalContext?.consultation}
+              />
+            </div>
           ) : (
             <div className="rounded-2xl border border-neutral-200/80 bg-white p-6 dark:border-neutral-800/80 dark:bg-neutral-900 shadow-2xs space-y-4 max-h-[60vh] overflow-y-auto pr-1 scrollbar-none">
               <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">

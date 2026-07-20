@@ -1,14 +1,37 @@
+import 'dotenv/config';
 import Redis from 'ioredis';
 
-const redisConfig = {
-  host: process.env.REDIS_HOST || '127.0.0.1',
-  port: parseInt(process.env.REDIS_PORT || '6379', 10),
-  password: process.env.REDIS_PASSWORD || undefined,
-  maxRetriesPerRequest: null, // Required by BullMQ to function correctly
-};
+
+let redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+
+let redisConfig;
+try {
+  const parsed = new URL(redisUrl);
+  redisConfig = {
+    host: parsed.hostname,
+    port: parsed.port ? parseInt(parsed.port, 10) : 6379,
+    username: parsed.username || undefined,
+    password: parsed.password || undefined,
+    maxRetriesPerRequest: null, // Required by BullMQ
+  };
+
+  if (parsed.protocol === 'rediss:') {
+    redisConfig.tls = { rejectUnauthorized: false };
+  }
+} catch (err) {
+  console.warn('Failed to parse REDIS_URL, falling back to localhost Redis:', err.message);
+  redisUrl = 'redis://127.0.0.1:6379';
+  redisConfig = {
+    host: '127.0.0.1',
+    port: 6379,
+    maxRetriesPerRequest: null,
+  };
+}
 
 // Instantiate the Redis client
-const redisConnection = new Redis(redisConfig);
+const redisConnection = new Redis(redisUrl, {
+  maxRetriesPerRequest: null, // Required by BullMQ
+});
 
 redisConnection.on('connect', () => {
   console.log('Successfully connected to Redis.');

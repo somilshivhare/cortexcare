@@ -26,6 +26,9 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  useEffect(() => {
+  }, []);
+
   // Silent Check-In: Attempt to refresh token on initial mount
   useEffect(() => {
     const checkSession = async () => {
@@ -47,7 +50,6 @@ export const AuthProvider = ({ children }) => {
           });
         }
       } catch (err) {
-        console.log('No active session found (silent check-in skipped).');
         setUser(null);
         setAccessToken(null);
       } finally {

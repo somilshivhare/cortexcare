@@ -5,6 +5,7 @@ import LoginForm from '../components/LoginForm.jsx';
 import SocialDivider from '../components/SocialDivider.jsx';
 
 const LoginPage = () => {
+  console.log('[DEBUG] LoginPage rendered');
   return (
     <div className="space-y-4">
       <AuthCard

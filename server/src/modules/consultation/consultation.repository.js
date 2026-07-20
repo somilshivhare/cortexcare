@@ -15,7 +15,7 @@ export const create = async (patientId) => {
 };
 
 /**
- * Find a consultation by ID, including its ordered conversation chunks.
+ * Find a consultation by ID, including its ordered messages and attachments.
  * @param {string} id 
  * @returns {Promise<object|null>}
  */
@@ -28,6 +28,8 @@ export const findById = async (id) => {
           id: true,
           firstName: true,
           lastName: true,
+          userId: true,
+          clinicId: true,
         },
       },
       doctor: {
@@ -38,9 +40,14 @@ export const findById = async (id) => {
           specialty: true,
         },
       },
-      chunks: {
+      messages: {
         orderBy: {
           sequence: 'asc',
+        },
+      },
+      attachments: {
+        orderBy: {
+          uploadedAt: 'asc',
         },
       },
     },
@@ -62,7 +69,7 @@ export const findByPatientId = async (patientId) => {
 };
 
 /**
- * Update consultation status and timeline timestamps.
+ * Update consultation status and timestamps.
  * @param {string} id 
  * @param {object} params
  * @param {string} params.status 
@@ -82,12 +89,12 @@ export const updateStatus = async (id, { status, startedAt, endedAt }) => {
 };
 
 /**
- * Get the next sequence index for a conversation chunk.
+ * Get the next sequence index for a message.
  * @param {string} consultationId 
  * @returns {Promise<number>}
  */
 export const getNextSequence = async (consultationId) => {
-  const aggregate = await prisma.conversationChunk.aggregate({
+  const aggregate = await prisma.message.aggregate({
     where: { consultationId },
     _max: {
       sequence: true,
@@ -98,7 +105,7 @@ export const getNextSequence = async (consultationId) => {
 };
 
 /**
- * Insert an immutable conversation chunk.
+ * Insert a message.
  * @param {object} params
  * @param {string} params.consultationId
  * @param {string} params.speaker
@@ -106,13 +113,31 @@ export const getNextSequence = async (consultationId) => {
  * @param {number} params.sequence
  * @returns {Promise<object>}
  */
-export const createChunk = async ({ consultationId, speaker, text, sequence }) => {
-  return await prisma.conversationChunk.create({
+export const createMessage = async ({ consultationId, speaker, text, sequence }) => {
+  return await prisma.message.create({
     data: {
       consultationId,
       speaker,
       text,
       sequence,
+    },
+  });
+};
+
+/**
+ * Insert an attachment record.
+ * @param {object} params
+ * @returns {Promise<object>}
+ */
+export const createAttachment = async ({ consultationId, fileName, fileType, cloudinaryUrl, publicId, extractedText }) => {
+  return await prisma.attachment.create({
+    data: {
+      consultationId,
+      fileName,
+      fileType,
+      cloudinaryUrl,
+      publicId,
+      extractedText: extractedText || null,
     },
   });
 };

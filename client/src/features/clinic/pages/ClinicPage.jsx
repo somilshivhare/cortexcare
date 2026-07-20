@@ -6,25 +6,37 @@ import PageHeader from '../../../components/PageHeader.jsx';
 import PageContainer from '../../../components/PageContainer.jsx';
 import EmptyState from '../../../components/EmptyState.jsx';
 import ErrorState from '../../../components/ErrorState.jsx';
-import StatCard from '../../../components/StatCard.jsx';
 import Spinner from '../../../components/Spinner.jsx';
-import { Building2, Plus, ArrowRight, UserCheck, Shield, Key, Sparkles, ClipboardList } from 'lucide-react';
+import Avatar from '../../../components/Avatar.jsx';
+import { Building2, Plus, ArrowRight, UserCheck, Shield, Key, ClipboardList, Clock, Phone, MapPin, Search } from 'lucide-react';
 
 const ClinicPage = () => {
   const { user } = useAuth();
   const { addToast } = useToast();
+
+  const handleCopyCode = (code) => {
+    if (!code) return;
+    navigator.clipboard.writeText(code);
+    addToast('Invite code copied to clipboard!', 'success');
+  };
   
   const clinicQuery = useClinicDetails();
   const isDoctor = user?.role === 'DOCTOR';
   
-  // Only doctors can fetch members list
-  const membersQuery = useClinicMembers(isDoctor && !!clinicQuery.data?.clinic);
+  const membersQuery = useClinicMembers(!!clinicQuery.data?.clinic);
 
   const createMutation = useCreateClinic();
   const joinMutation = useJoinClinic();
 
   const [clinicNameInput, setClinicNameInput] = useState('');
   const [inviteCodeInput, setInviteCodeInput] = useState('');
+
+  // Search states
+  const [doctorSearch, setDoctorSearch] = useState('');
+  const [patientSearch, setPatientSearch] = useState('');
+
+  // Detail Modal state
+  const [selectedMember, setSelectedMember] = useState(null); // { type: 'DOCTOR'|'PATIENT', data: memberObj }
 
   const handleCreateClinic = async (e) => {
     e.preventDefault();
@@ -69,14 +81,12 @@ const ClinicPage = () => {
     );
   }
 
-  // Not in a clinic view
   if (clinicQuery.isError && clinicQuery.error?.response?.status === 404) {
     return (
       <PageContainer>
         <PageHeader title="Clinic Portal" breadcrumbs={[{ name: 'Workspace' }, { name: 'Clinic' }]} />
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start max-w-4xl mx-auto">
-          {/* Join Clinic Panel */}
           <div className="rounded-2xl border border-neutral-200/80 bg-white p-6 dark:border-neutral-800/80 dark:bg-neutral-900 shadow-2xs">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/20 dark:text-indigo-400">
               <Key className="h-5 w-5" />
@@ -99,7 +109,7 @@ const ClinicPage = () => {
               <button
                 type="submit"
                 disabled={joinMutation.isPending}
-                className="w-full flex items-center justify-center gap-2 rounded-lg bg-neutral-900 py-2 text-xs font-bold text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 transition-colors disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 rounded-lg bg-neutral-900 py-2 text-xs font-bold text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-955 dark:hover:bg-neutral-100 transition-colors disabled:opacity-50"
               >
                 <span>{joinMutation.isPending ? 'Joining...' : 'Link Clinic Account'}</span>
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -107,7 +117,6 @@ const ClinicPage = () => {
             </form>
           </div>
 
-          {/* Create Clinic Panel (Doctors only) */}
           {isDoctor ? (
             <div className="rounded-2xl border border-neutral-200/80 bg-white p-6 dark:border-neutral-800/80 dark:bg-neutral-900 shadow-2xs">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400">
@@ -131,7 +140,7 @@ const ClinicPage = () => {
                 <button
                   type="submit"
                   disabled={createMutation.isPending}
-                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-neutral-900 py-2 text-xs font-bold text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 transition-colors disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-neutral-900 py-2 text-xs font-bold text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-955 dark:hover:bg-neutral-100 transition-colors disabled:opacity-50"
                 >
                   <span>{createMutation.isPending ? 'Creating...' : 'Initialize Clinic'}</span>
                   <Plus className="h-3.5 w-3.5" />
@@ -152,7 +161,6 @@ const ClinicPage = () => {
     );
   }
 
-  // Handle other generic errors
   if (clinicQuery.isError) {
     return (
       <PageContainer>
@@ -165,6 +173,20 @@ const ClinicPage = () => {
   const clinic = clinicQuery.data?.clinic || {};
   const members = membersQuery.data?.members || { doctors: [], patients: [] };
 
+  // Filter lists based on search
+  const filteredDoctors = members.doctors.filter((doc) => {
+    const fullName = `Dr. ${doc.firstName} ${doc.lastName}`.toLowerCase();
+    const specialty = (doc.specialty || 'General Practitioner').toLowerCase();
+    const query = doctorSearch.toLowerCase();
+    return fullName.includes(query) || specialty.includes(query);
+  });
+
+  const filteredPatients = members.patients.filter((pat) => {
+    const fullName = `${pat.firstName} ${pat.lastName}`.toLowerCase();
+    const query = patientSearch.toLowerCase();
+    return fullName.includes(query);
+  });
+
   return (
     <PageContainer>
       <PageHeader 
@@ -175,102 +197,260 @@ const ClinicPage = () => {
         ]} 
       />
 
-      {/* Stats header card */}
       <div className="relative overflow-hidden rounded-2xl border border-neutral-200/80 bg-linear-to-r from-neutral-900 via-neutral-850 to-neutral-950 p-6 md:p-8 text-white shadow-xs dark:border-neutral-800/80">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.06),transparent)] pointer-events-none" />
 
         <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">
-              <Building2 className="h-4.5 w-4.5" />
-              <span>Affiliated Facility</span>
+          <div className="flex items-start gap-4">
+            {clinic.logoUrl ? (
+              <img src={clinic.logoUrl} alt="Clinic Logo" className="h-16 w-16 rounded-xl object-cover border border-white/10 shrink-0" />
+            ) : (
+              <div className="h-16 w-16 rounded-xl bg-white/10 flex items-center justify-center text-white text-xs font-bold uppercase shrink-0">Logo</div>
+            )}
+            <div>
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                <Building2 className="h-4.5 w-4.5" />
+                <span>Affiliated Facility</span>
+              </div>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">
+                {clinic.name}
+              </h2>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 text-xs text-neutral-400 font-medium">
+                {clinic.timings && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" /><span>{clinic.timings}</span>
+                  </div>
+                )}
+                {clinic.phoneNumber && (
+                  <div className="flex items-center gap-1">
+                    <Phone className="h-3.5 w-3.5" /><span>{clinic.phoneNumber}</span>
+                  </div>
+                )}
+                {clinic.address && (
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5" /><span>{clinic.address}</span>
+                  </div>
+                )}
+              </div>
             </div>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">
-              {clinic.name}
-            </h2>
-            <p className="mt-1 text-sm text-neutral-400">
-              Review stats, active clinicians, and medical enrollment directories.
-            </p>
           </div>
 
-          {/* Doctor Invite Code Card */}
           {isDoctor && clinic.code && (
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-4 min-w-[200px] flex flex-col justify-center">
+            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-4 min-w-[200px] flex flex-col justify-center relative group shrink-0">
               <span className="text-[9px] font-bold text-neutral-300 uppercase tracking-wider">Invite Code</span>
-              <span className="text-lg font-mono font-bold tracking-widest text-white mt-1 select-all">
-                {clinic.code}
-              </span>
+              <div className="flex items-center justify-between gap-3 mt-1">
+                <span className="text-lg font-mono font-bold tracking-widest text-white select-all">
+                  {clinic.code}
+                </span>
+                <button
+                  onClick={() => handleCopyCode(clinic.code)}
+                  className="p-1 rounded-md bg-white/10 hover:bg-white/20 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                  title="Copy to Clipboard"
+                >
+                  <ClipboardList className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Members Directory Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start mt-8">
         
-        {/* Doctors list */}
-        <div className="rounded-2xl border border-neutral-200/80 bg-white p-6 dark:border-neutral-800/80 dark:bg-neutral-900 shadow-2xs">
-          <h3 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider flex items-center gap-2 pb-4 border-b border-neutral-100 dark:border-neutral-800">
-            <Shield className="h-4.5 w-4.5 text-indigo-500" />
-            <span>Staff Directory ({clinic.totalDoctors || 0})</span>
-          </h3>
+        {/* Doctors Directory */}
+        <div className="rounded-2xl border border-neutral-200/80 bg-white p-6 dark:border-neutral-800/80 dark:bg-neutral-900 shadow-2xs space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-neutral-100 dark:border-neutral-800">
+            <h3 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+              <Shield className="h-4.5 w-4.5 text-indigo-500" />
+              <span>Staff Directory ({clinic.totalDoctors || 0})</span>
+            </h3>
+            
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-neutral-450" />
+              <input
+                type="text"
+                placeholder="Search staff..."
+                value={doctorSearch}
+                onChange={(e) => setDoctorSearch(e.target.value)}
+                className="pl-8 pr-3 py-1.5 w-full md:w-44 rounded-md border border-neutral-200 bg-white text-[10px] text-neutral-900 outline-none focus:border-neutral-950 dark:border-neutral-800 dark:bg-neutral-900 dark:text-white dark:focus:border-white"
+              />
+            </div>
+          </div>
 
-          <div className="mt-4 divide-y divide-neutral-100 dark:divide-neutral-800">
-            {isDoctor ? (
-              members.doctors.length === 0 ? (
-                <p className="py-4 text-xs text-neutral-500">No doctors enrolled.</p>
-              ) : (
-                members.doctors.map((doc) => (
-                  <div key={doc.id} className="flex justify-between py-3 first:pt-0 last:pb-0">
+          <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
+            {filteredDoctors.length === 0 ? (
+              <p className="py-4 text-xs text-neutral-550">No staff found.</p>
+            ) : (
+              filteredDoctors.map((doc) => (
+                <div
+                  key={doc.id}
+                  onClick={() => setSelectedMember({ type: 'DOCTOR', data: doc })}
+                  className="flex items-center justify-between py-3 first:pt-0 last:pb-0 cursor-pointer hover:bg-neutral-50/50 dark:hover:bg-neutral-800/20 px-2 rounded-lg transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar 
+                      src={doc.avatarUrl || localStorage.getItem(`avatar_DOCTOR_${doc.userId}`) || ''} 
+                      name={`Dr. ${doc.firstName} ${doc.lastName}`} 
+                      size="sm" 
+                    />
                     <span className="text-xs font-bold text-neutral-900 dark:text-white">
                       Dr. {doc.firstName} {doc.lastName}
                     </span>
-                    <span className="text-[10px] text-neutral-450 uppercase tracking-wider font-semibold">
-                      {doc.specialty || 'General Practitioner'}
-                    </span>
                   </div>
-                ))
-              )
-            ) : (
-              <div className="py-4 text-xs text-neutral-500 leading-relaxed">
-                Directory list is restricted to licensed medical practitioners only.
-              </div>
+                  <span className="text-[10px] text-neutral-450 uppercase tracking-wider font-semibold">
+                    {doc.specialty || 'General Practitioner'}
+                  </span>
+                </div>
+              ))
             )}
           </div>
         </div>
 
-        {/* Patients list */}
-        <div className="rounded-2xl border border-neutral-200/80 bg-white p-6 dark:border-neutral-800/80 dark:bg-neutral-900 shadow-2xs">
-          <h3 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider flex items-center gap-2 pb-4 border-b border-neutral-100 dark:border-neutral-800">
-            <UserCheck className="h-4.5 w-4.5 text-emerald-500" />
-            <span>Enrolled Patients ({clinic.totalPatients || 0})</span>
-          </h3>
+        {/* Patients Directory */}
+        <div className="rounded-2xl border border-neutral-200/80 bg-white p-6 dark:border-neutral-800/80 dark:bg-neutral-900 shadow-2xs space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-neutral-100 dark:border-neutral-800">
+            <h3 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+              <UserCheck className="h-4.5 w-4.5 text-emerald-500" />
+              <span>Enrolled Patients ({clinic.totalPatients || 0})</span>
+            </h3>
 
-          <div className="mt-4 divide-y divide-neutral-100 dark:divide-neutral-800">
+            {isDoctor && (
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-neutral-450" />
+                <input
+                  type="text"
+                  placeholder="Search patients..."
+                  value={patientSearch}
+                  onChange={(e) => setPatientSearch(e.target.value)}
+                  className="pl-8 pr-3 py-1.5 w-full md:w-44 rounded-md border border-neutral-200 bg-white text-[10px] text-neutral-900 outline-none focus:border-neutral-950 dark:border-neutral-800 dark:bg-neutral-900 dark:text-white dark:focus:border-white"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
             {isDoctor ? (
-              members.patients.length === 0 ? (
-                <p className="py-4 text-xs text-neutral-500">No patients enrolled.</p>
+              filteredPatients.length === 0 ? (
+                <p className="py-4 text-xs text-neutral-555">No patients found.</p>
               ) : (
-                members.patients.map((pat) => (
-                  <div key={pat.id} className="flex justify-between py-3 first:pt-0 last:pb-0">
-                    <span className="text-xs font-bold text-neutral-900 dark:text-white">
-                      {pat.firstName} {pat.lastName}
-                    </span>
-                    <span className="text-[10px] text-neutral-450 uppercase tracking-wider font-semibold">
+                filteredPatients.map((pat) => (
+                  <div
+                    key={pat.id}
+                    onClick={() => setSelectedMember({ type: 'PATIENT', data: pat })}
+                    className="flex items-center justify-between py-3 first:pt-0 last:pb-0 cursor-pointer hover:bg-neutral-50/50 dark:hover:bg-neutral-800/20 px-2 rounded-lg transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar 
+                        src={pat.avatarUrl || localStorage.getItem(`avatar_PATIENT_${pat.userId}`) || ''} 
+                        name={`${pat.firstName} ${pat.lastName}`} 
+                        size="sm" 
+                      />
+                      <span className="text-xs font-bold text-neutral-900 dark:text-white">
+                        {pat.firstName} {pat.lastName}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-neutral-455 uppercase tracking-wider font-semibold">
                       Registered Patient
                     </span>
                   </div>
                 ))
               )
             ) : (
-              <div className="py-4 text-xs text-neutral-500 leading-relaxed">
-                Directory list is restricted to licensed medical practitioners only.
+              <div className="py-4 text-xs text-neutral-450 leading-relaxed">
+                Patient directory access is restricted to medical staff.
               </div>
             )}
           </div>
         </div>
 
       </div>
+
+      {/* Details View Modal */}
+      {selectedMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/50 backdrop-blur-xs p-4 animate-fade-in">
+          <div className="w-full max-w-sm rounded-2xl border border-neutral-200 bg-white p-6 shadow-md dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <Avatar
+                src={
+                  selectedMember.type === 'DOCTOR'
+                    ? (selectedMember.data.avatarUrl || localStorage.getItem(`avatar_DOCTOR_${selectedMember.data.userId}`) || '')
+                    : (selectedMember.data.avatarUrl || localStorage.getItem(`avatar_PATIENT_${selectedMember.data.userId}`) || '')
+                }
+                name={
+                  selectedMember.type === 'DOCTOR'
+                    ? `Dr. ${selectedMember.data.firstName} ${selectedMember.data.lastName}`
+                    : `${selectedMember.data.firstName} ${selectedMember.data.lastName}`
+                }
+                size="lg"
+              />
+              
+              <div>
+                <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                  {selectedMember.type === 'DOCTOR' ? 'Practitioner Details' : 'Patient Information'}
+                </h3>
+                <h4 className="text-base font-bold text-neutral-950 dark:text-white mt-1">
+                  {selectedMember.type === 'DOCTOR'
+                    ? `Dr. ${selectedMember.data.firstName} ${selectedMember.data.lastName}`
+                    : `${selectedMember.data.firstName} ${selectedMember.data.lastName}`}
+                </h4>
+                <p className="text-xs text-neutral-450 uppercase tracking-wider font-semibold mt-0.5">
+                  {selectedMember.type === 'DOCTOR'
+                    ? (selectedMember.data.specialty || 'General Practitioner')
+                    : 'Registered Patient'}
+                </p>
+              </div>
+
+              <div className="w-full text-left space-y-3.5 border-t border-neutral-100 pt-4 dark:border-neutral-800 text-xs">
+                {selectedMember.type === 'DOCTOR' ? (
+                  <>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">License Number</span>
+                      <span className="text-neutral-900 dark:text-white font-medium">
+                        {selectedMember.data.licenseNumber || 'Not provided'}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Biography</span>
+                      <p className="text-neutral-500 dark:text-neutral-400 leading-relaxed max-h-32 overflow-y-auto pr-1">
+                        {selectedMember.data.bio || 'No professional biography available.'}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Email Address</span>
+                      <span className="text-neutral-900 dark:text-white font-medium">
+                        {selectedMember.data.user?.email || 'Not provided'}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Phone Number</span>
+                      <span className="text-neutral-900 dark:text-white font-medium">
+                        {selectedMember.data.phoneNumber || 'Not provided'}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">Home Address</span>
+                      <p className="text-neutral-550 dark:text-neutral-400 leading-relaxed">
+                        {selectedMember.data.address || 'Not provided'}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSelectedMember(null)}
+                className="w-full rounded-lg bg-neutral-950 py-2 text-xs font-bold text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 transition-colors"
+              >
+                Close View
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </PageContainer>
   );
 };

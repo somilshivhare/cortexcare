@@ -41,3 +41,25 @@ export const reviewConsultationApi = async (consultationId) => {
   const response = await api.post(`/doctor/consultations/${consultationId}/review`);
   return response.data;
 };
+
+/**
+ * Fetch all patients in the doctor's clinic.
+ */
+export const getClinicPatientsApi = async () => {
+  const response = await api.get('/doctor/patients');
+  return response.data;
+};
+
+/**
+ * Upload an attachment to a patient consultation as a doctor.
+ */
+export const uploadDoctorAttachmentApi = async (consultationId, file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await api.post(`/doctor/consultations/${consultationId}/attachments`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};

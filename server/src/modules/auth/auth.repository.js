@@ -1,4 +1,12 @@
+import crypto from 'crypto';
 import prisma from '../../config/prisma.js';
+
+/**
+ * Generate a random 6-character alphanumeric invite code.
+ */
+const generateCode = () => {
+  return 'CC-' + crypto.randomBytes(3).toString('hex').toUpperCase();
+};
 
 /**
  * Find a user by email, including their profile details.
@@ -39,11 +47,52 @@ export const findUserById = async (id) => {
  * @param {string} params.firstName
  * @param {string} params.lastName
  * @param {string} [params.specialty]
+ * @param {string} [params.clinicCode]
+ * @param {string} [params.clinicName]
  * @returns {Promise<object>}
  */
-export const createUser = async ({ email, passwordHash, role, firstName, lastName, specialty }) => {
-  // Use a transaction to ensure both User and Profile are created atomically
+export const createUser = async ({ email, passwordHash, role, firstName, lastName, specialty, clinicCode, clinicName }) => {
+  // Ensure the database connection is active before starting the transaction timer (prevents cold start timeouts)
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+  } catch (err) {
+    console.warn('Database warmup query failed:', err.message);
+  }
+
+  // Use a transaction to ensure both User, Profile, and Clinic are created atomically
   return await prisma.$transaction(async (tx) => {
+    let clinicId = null;
+
+    // 1. Handle clinic join via code
+    if (clinicCode) {
+      const clinic = await tx.clinic.findUnique({
+        where: { code: clinicCode.trim().toUpperCase() },
+      });
+      if (!clinic) {
+        throw new Error('Clinic not found. Please verify the invite code.');
+      }
+      clinicId = clinic.id;
+    }
+
+    // 2. Handle clinic creation for Doctor
+    if (role === 'DOCTOR' && clinicName) {
+      let code = generateCode();
+      let existingClinic = await tx.clinic.findUnique({ where: { code } });
+      while (existingClinic) {
+        code = generateCode();
+        existingClinic = await tx.clinic.findUnique({ where: { code } });
+      }
+
+      const newClinic = await tx.clinic.create({
+        data: {
+          name: clinicName.trim(),
+          code,
+        },
+      });
+      clinicId = newClinic.id;
+    }
+
+    // 3. Create User record
     const user = await tx.user.create({
       data: {
         email,
@@ -52,21 +101,24 @@ export const createUser = async ({ email, passwordHash, role, firstName, lastNam
       },
     });
 
+    // 4. Create Role-specific Profile record
     if (role === 'PATIENT') {
       await tx.patient.create({
         data: {
           userId: user.id,
-          firstName,
-          lastName,
+          firstName: firstName || '',
+          lastName: lastName || '',
+          clinicId,
         },
       });
     } else if (role === 'DOCTOR') {
       await tx.doctor.create({
         data: {
           userId: user.id,
-          firstName,
-          lastName,
-          specialty,
+          firstName: firstName || '',
+          lastName: lastName || '',
+          specialty: specialty || '',
+          clinicId,
         },
       });
     }
@@ -79,5 +131,17 @@ export const createUser = async ({ email, passwordHash, role, firstName, lastNam
         doctor: true,
       },
     });
+  }, {
+    maxWait: 5000,
+    timeout: 20000,
+  });
+};
+
+/**
+ * Delete user by ID.
+ */
+export const deleteUser = async (id) => {
+  return await prisma.user.delete({
+    where: { id },
   });
 };

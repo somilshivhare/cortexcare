@@ -6,7 +6,6 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./modules/auth/auth.routes.js";
 import patientRoutes from "./modules/patient/patient.routes.js";
 import consultationRoutes from "./modules/consultation/consultation.routes.js";
-import livekitRoutes from "./modules/livekit/livekit.routes.js";
 import clinicalContextRoutes from "./modules/clinicalContext/clinicalContext.routes.js";
 import doctorRoutes from "./modules/doctor/doctor.routes.js";
 import clinicRoutes from "./modules/clinic/clinic.routes.js";
@@ -32,9 +31,6 @@ app.use('/api/patient', patientRoutes);
 
 // Consultation routes registration
 app.use('/api/consultation', consultationRoutes);
-
-// LiveKit routes registration
-app.use('/api/livekit', livekitRoutes);
 
 // Clinical Context routes registration
 app.use('/api/clinical-context', clinicalContextRoutes);

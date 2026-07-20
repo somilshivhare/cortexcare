@@ -29,6 +29,7 @@ export const useNotifications = () => {
       time: '2 days ago',
       read: true,
       type: 'success',
+      consultationId: '5928',
     },
   ]);
 

@@ -15,6 +15,7 @@ export const findDoctorByUserId = async (userId) => {
           role: true,
         },
       },
+      clinic: true,
     },
   });
 };
@@ -22,26 +23,31 @@ export const findDoctorByUserId = async (userId) => {
 /**
  * Update doctor profile.
  */
-export const updateDoctorByUserId = async (userId, { firstName, lastName, specialty }) => {
+export const updateDoctorByUserId = async (userId, { firstName, lastName, specialty, licenseNumber, bio }) => {
   return await prisma.doctor.update({
     where: { userId },
     data: {
       ...(firstName && { firstName }),
       ...(lastName && { lastName }),
       ...(specialty && { specialty }),
+      ...(licenseNumber !== undefined && { licenseNumber }),
+      ...(bio !== undefined && { bio }),
     },
   });
 };
 
 /**
- * Count unassigned consultations ready for review (status is PROCESSING or COMPLETED).
+ * Count unassigned consultations ready for review (status is PROCESSING or COMPLETED) within a clinic.
  */
-export const countPendingUnassigned = async () => {
+export const countPendingUnassigned = async (clinicId) => {
   return await prisma.consultation.count({
     where: {
       doctorId: null,
       status: {
         in: ['PROCESSING', 'COMPLETED'],
+      },
+      patient: {
+        clinicId,
       },
     },
   });
@@ -62,14 +68,17 @@ export const countClaimedActive = async (doctorId) => {
 };
 
 /**
- * Find all unassigned consultations ready to be claimed.
+ * Find all unassigned consultations ready to be claimed within a clinic.
  */
-export const findPending = async () => {
+export const findPending = async (clinicId) => {
   return await prisma.consultation.findMany({
     where: {
       doctorId: null,
       status: {
         in: ['PROCESSING', 'COMPLETED'],
+      },
+      patient: {
+        clinicId,
       },
     },
     include: {
@@ -146,6 +155,36 @@ export const markReviewed = async (id) => {
     data: {
       reviewStatus: 'REVIEWED',
       reviewedAt: new Date(),
+    },
+  });
+};
+
+/**
+ * Find all patients in a specific clinic, including their email and consultation history.
+ */
+export const findPatientsByClinicId = async (clinicId) => {
+  return await prisma.patient.findMany({
+    where: { clinicId },
+    include: {
+      user: {
+        select: {
+          email: true,
+        },
+      },
+      consultations: {
+        select: {
+          id: true,
+          status: true,
+          reviewStatus: true,
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      },
+    },
+    orderBy: {
+      lastName: 'asc',
     },
   });
 };

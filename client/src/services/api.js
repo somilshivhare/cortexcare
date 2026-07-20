@@ -20,6 +20,7 @@ const api = axios.create({
 // Request Interceptor: Inject in-memory access token into Authorization header
 api.interceptors.request.use(
   (config) => {
+    console.log('[DEBUG] API Request:', config.method?.toUpperCase(), config.url);
     if (inMemoryAccessToken) {
       config.headers.Authorization = `Bearer ${inMemoryAccessToken}`;
     }
@@ -30,14 +31,19 @@ api.interceptors.request.use(
 
 // Response Interceptor: Handle automatic silent refresh on 401 errors
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('[DEBUG] API Response success:', response.config.url, response.status);
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
+    console.log('[DEBUG] API Response error:', originalRequest?.url, error.response?.status, error.message);
 
     // Trigger token refresh if request fails with 401 and hasn't been retried yet
     if (
       error.response &&
       error.response.status === 401 &&
+      originalRequest &&
       !originalRequest._retry &&
       !originalRequest.url.includes('/auth/refresh') // Prevent infinite loops if refresh itself fails
     ) {

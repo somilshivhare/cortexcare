@@ -4,7 +4,9 @@ import {
   getConsultationsApi,
   claimConsultationApi,
   saveNotesApi,
-  reviewConsultationApi
+  reviewConsultationApi,
+  getClinicPatientsApi,
+  uploadDoctorAttachmentApi
 } from '../api/doctor.api.js';
 
 export const useDoctorStats = () => {
@@ -52,6 +54,23 @@ export const useReviewConsultation = () => {
       queryClient.invalidateQueries({ queryKey: ['doctor', 'stats'] });
       queryClient.invalidateQueries({ queryKey: ['timeline', variables] });
       queryClient.invalidateQueries({ queryKey: ['clinical-context', variables] });
+    },
+  });
+};
+
+export const useClinicPatients = () => {
+  return useQuery({
+    queryKey: ['doctor', 'patients'],
+    queryFn: getClinicPatientsApi,
+  });
+};
+
+export const useUploadDoctorAttachment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ consultationId, file }) => uploadDoctorAttachmentApi(consultationId, file),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['clinical-context', variables.consultationId] });
     },
   });
 };

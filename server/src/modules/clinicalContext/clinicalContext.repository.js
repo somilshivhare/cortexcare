@@ -16,6 +16,26 @@ export const findUniqueByConsultationId = async (consultationId) => {
             select: {
               id: true,
               userId: true,
+              firstName: true,
+              lastName: true,
+              phoneNumber: true,
+              address: true,
+              consultations: {
+                select: {
+                  id: true,
+                  status: true,
+                  reviewStatus: true,
+                  createdAt: true,
+                },
+                orderBy: {
+                  createdAt: 'desc',
+                },
+              },
+            },
+          },
+          attachments: {
+            orderBy: {
+              uploadedAt: 'asc',
             },
           },
         },
@@ -47,6 +67,44 @@ export const findAllByPatientUserId = async (userId) => {
           endedAt: true,
         },
       },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+};
+
+/**
+ * Save a newly synthesized clinical context document.
+ * @param {object} data - The clinical context payload
+ * @returns {Promise<object>}
+ */
+export const create = async (data) => {
+  return await prisma.clinicalContext.create({
+    data,
+  });
+};
+
+/**
+ * Retrieve past clinical history summaries for a specific patient, excluding the current session.
+ * @param {string} patientId 
+ * @param {string} excludeConsultationId 
+ * @returns {Promise<Array>}
+ */
+export const findPastHistory = async (patientId, excludeConsultationId) => {
+  return await prisma.clinicalContext.findMany({
+    where: {
+      consultation: {
+        patientId,
+        id: { not: excludeConsultationId },
+        status: 'COMPLETED',
+      },
+    },
+    select: {
+      chiefComplaint: true,
+      presentIllness: true,
+      doctorSummary: true,
+      createdAt: true,
     },
     orderBy: {
       createdAt: 'desc',

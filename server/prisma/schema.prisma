@@ -55,6 +55,8 @@ model Patient {
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   firstName     String
   lastName      String
+  phoneNumber   String?
+  address       String?
   clinicId      String?
   clinic        Clinic?        @relation(fields: [clinicId], references: [id], onDelete: SetNull)
   createdAt     DateTime       @default(now())
@@ -71,6 +73,8 @@ model Doctor {
   firstName     String
   lastName      String
   specialty     String?
+  licenseNumber String?
+  bio           String?
   clinicId      String?
   clinic        Clinic?        @relation(fields: [clinicId], references: [id], onDelete: SetNull)
   createdAt     DateTime       @default(now())
@@ -94,14 +98,15 @@ model Consultation {
   reviewedAt      DateTime?
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
-  chunks          ConversationChunk[]
+  messages        Message[]
+  attachments     Attachment[]
   clinicalContext ClinicalContext?
   doctorNote      DoctorNote?
 
   @@map("consultations")
 }
 
-model ConversationChunk {
+model Message {
   id             String       @id @default(uuid())
   consultationId String
   consultation   Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
@@ -111,21 +116,42 @@ model ConversationChunk {
   createdAt      DateTime     @default(now())
 
   @@unique([consultationId, sequence])
-  @@map("conversation_chunks")
+  @@map("messages")
+}
+
+model Attachment {
+  id             String       @id @default(uuid())
+  consultationId String
+  consultation   Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  fileName       String
+  fileType       String
+  cloudinaryUrl  String
+  publicId       String
+  extractedText  String?
+  uploadedAt     DateTime     @default(now())
+
+  @@map("attachments")
 }
 
 model ClinicalContext {
-  id              String       @id @default(uuid())
-  consultationId  String       @unique
-  consultation    Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
-  summary         String
-  symptoms        Json
-  riskFlags       Json
-  recommendations Json
-  mood            Json
-  confidenceScore Float
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id                    String       @id @default(uuid())
+  consultationId        String       @unique
+  consultation          Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  chiefComplaint        String
+  presentIllness        String
+  pastMedicalHistory    Json
+  currentMedications    Json
+  allergies             Json
+  lifestyle             Json
+  symptoms              Json
+  timeline              Json
+  riskFactors           Json
+  riskLevel             String
+  recommendedSpecialist String
+  doctorSummary         String
+  consultationState     Json
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
 
   @@map("clinical_contexts")
 }
@@ -144,13 +170,17 @@ model DoctorNote {
 }
 
 model Clinic {
-  id        String   @id @default(uuid())
-  name      String
-  code      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  patients  Patient[]
-  doctors   Doctor[]
+  id          String   @id @default(uuid())
+  name        String
+  code        String   @unique
+  address     String?
+  phoneNumber String?
+  timings     String?
+  logoUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  patients    Patient[]
+  doctors     Doctor[]
 
   @@map("clinics")
 }

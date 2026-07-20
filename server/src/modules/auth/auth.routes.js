@@ -13,5 +13,6 @@ router.post('/logout', authController.logout);
 
 // Protected routes
 router.get('/me', authenticateJWT, authController.getMe);
+router.delete('/account', authenticateJWT, authController.deleteAccount);
 
 export default router;

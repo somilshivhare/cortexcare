@@ -2,12 +2,14 @@ import 'dotenv/config';
 import app from "./app.js";
 import prisma from "./config/prisma.js";
 import redisConnection from "./config/redis.js";
+import { startWorker, stopWorker } from "./modules/consultation/workers/consultation.worker.js";
 
 const port = process.env.PORT || 5000;
 
 // Start server
 const server = app.listen(port, () => {
   console.log(`Cortexcare api has started running on http://localhost:${port}`);
+  startWorker();
 });
 
 /**
@@ -21,11 +23,14 @@ const handleShutdown = async (signal) => {
     console.log('Express HTTP server closed.');
 
     try {
-      // 2. Disconnect Prisma client
+      // 2. Stop BullMQ Worker
+      await stopWorker();
+
+      // 3. Disconnect Prisma client
       await prisma.$disconnect();
       console.log('Prisma database client disconnected.');
 
-      // 3. Disconnect Redis connection client
+      // 4. Disconnect Redis connection client
       await redisConnection.quit();
       console.log('Redis client connection closed.');
 

@@ -17,7 +17,7 @@ router.post('/join', validateJoinClinic, clinicController.join);
 // Create a clinic (restricted to Doctors)
 router.post('/', authorizeRoles('DOCTOR'), validateCreateClinic, clinicController.create);
 
-// Get clinic members list (restricted to Doctors)
-router.get('/members', authorizeRoles('DOCTOR'), clinicController.getMembers);
+// Get clinic members list (accessible by both Doctors and Patients)
+router.get('/members', authorizeRoles('DOCTOR', 'PATIENT'), clinicController.getMembers);
 
 export default router;

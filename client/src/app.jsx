@@ -12,6 +12,10 @@ import './styles/index.css';
  * Root Application Component nesting provider chains.
  */
 function App() {
+  React.useEffect(() => {
+    console.log('[DEBUG] App mounted');
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>

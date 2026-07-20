@@ -13,12 +13,6 @@ export const LoginSchema = z.object({
 
 export const RegisterSchema = z
   .object({
-    firstName: z
-      .string()
-      .min(2, { message: 'First name must be at least 2 characters.' }),
-    lastName: z
-      .string()
-      .min(2, { message: 'Last name must be at least 2 characters.' }),
     email: z
       .string()
       .min(1, { message: 'Email address is required.' })
@@ -29,27 +23,14 @@ export const RegisterSchema = z
     confirmPassword: z
       .string()
       .min(1, { message: 'Please confirm your password.' }),
-    role: z.enum(['PATIENT', 'DOCTOR'], {
+    role: z.enum(['PATIENT', 'DOCTOR', 'ADMIN'], {
       required_error: 'Please select a profile type.',
     }),
-    specialty: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match.',
     path: ['confirmPassword'],
-  })
-  .refine(
-    (data) => {
-      if (data.role === 'DOCTOR') {
-        return !!data.specialty && data.specialty.trim().length >= 2;
-      }
-      return true;
-    },
-    {
-      message: 'Specialty field is required for Doctors.',
-      path: ['specialty'],
-    }
-  );
+  });
 
 export const ForgotPasswordSchema = z.object({
   email: z

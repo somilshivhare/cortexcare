@@ -11,7 +11,8 @@ const generateCode = () => {
 /**
  * Create a new clinic.
  */
-export const createClinic = async (userId, name) => {
+export const createClinic = async (userId, clinicDetails) => {
+  const { name } = clinicDetails;
   // 1. Verify creator doctor profile
   const doctor = await clinicRepository.findDoctorByUserId(userId);
   if (!doctor) {
@@ -40,7 +41,7 @@ export const createClinic = async (userId, name) => {
   }
 
   // 4. Create clinic and assign doctor in a transaction
-  const clinic = await clinicRepository.createClinic(name, code, userId);
+  const clinic = await clinicRepository.createClinic(clinicDetails, code, userId);
 
   return {
     success: true,
@@ -136,17 +137,43 @@ export const getUserClinic = async (userId, role) => {
 /**
  * Retrieve members list for doctor's clinic.
  */
-export const getMembersList = async (userId) => {
-  const doctor = await clinicRepository.findDoctorByUserId(userId);
-  if (!doctor || !doctor.clinicId) {
-    return {
-      success: false,
-      status: 404,
-      error: 'Doctor does not belong to any clinic.',
-    };
+export const getMembersList = async (userId, role) => {
+  let clinicId;
+
+  if (role === 'DOCTOR') {
+    const doctor = await clinicRepository.findDoctorByUserId(userId);
+    if (!doctor || !doctor.clinicId) {
+      return {
+        success: false,
+        status: 404,
+        error: 'Doctor does not belong to any clinic.',
+      };
+    }
+    clinicId = doctor.clinicId;
+  } else {
+    const patient = await clinicRepository.findPatientByUserId(userId);
+    if (!patient || !patient.clinicId) {
+      return {
+        success: false,
+        status: 404,
+        error: 'Patient does not belong to any clinic.',
+      };
+    }
+    clinicId = patient.clinicId;
   }
 
-  const members = await clinicRepository.findClinicMembers(doctor.clinicId);
+  const members = await clinicRepository.findClinicMembers(clinicId);
+
+  // For patients, do not leak other patients in the clinic due to privacy
+  if (role === 'PATIENT') {
+    return {
+      success: true,
+      members: {
+        doctors: members.doctors,
+        patients: [],
+      },
+    };
+  }
 
   return {
     success: true,

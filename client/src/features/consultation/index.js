@@ -1,1 +1,1 @@
-export { default as VoiceConsultationPage } from './pages/VoiceConsultationPage.jsx';
+export { default as AIConsultationPage } from './pages/AIConsultationPage.jsx';

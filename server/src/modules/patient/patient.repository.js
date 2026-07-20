@@ -18,6 +18,7 @@ export const findPatientByUserId = async (userId) => {
           createdAt: true,
         },
       },
+      clinic: true,
     },
   });
 };
@@ -28,12 +29,14 @@ export const findPatientByUserId = async (userId) => {
  * @param {object} updateData 
  * @returns {Promise<object>}
  */
-export const updatePatientByUserId = async (userId, { firstName, lastName }) => {
+export const updatePatientByUserId = async (userId, { firstName, lastName, phoneNumber, address }) => {
   return await prisma.patient.update({
     where: { userId },
     data: {
       ...(firstName && { firstName }),
       ...(lastName && { lastName }),
+      ...(phoneNumber !== undefined && { phoneNumber }),
+      ...(address !== undefined && { address }),
     },
     include: {
       user: {

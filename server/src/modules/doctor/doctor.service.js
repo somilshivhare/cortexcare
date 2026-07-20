@@ -1,6 +1,7 @@
 import * as doctorRepository from './doctor.repository.js';
 import * as consultationRepository from '../consultation/consultation.repository.js';
 import { getClinicalContext } from '../clinicalContext/clinicalContext.service.js';
+import { saveAttachmentDirect } from '../consultation/services/attachment.service.js';
 
 /**
  * Helper to fetch and verify doctor profile exists.
@@ -52,7 +53,7 @@ export const getDoctorDashboard = async (userId) => {
   const verify = await getVerifiedDoctor(userId);
   if (!verify.success) return verify;
 
-  const pendingUnassignedCount = await doctorRepository.countPendingUnassigned();
+  const pendingUnassignedCount = await doctorRepository.countPendingUnassigned(verify.doctor.clinicId);
   const claimedActiveCount = await doctorRepository.countClaimedActive(verify.doctor.id);
 
   return {
@@ -73,7 +74,7 @@ export const getConsultations = async (userId, status) => {
 
   let consultations = [];
   if (status === 'pending') {
-    consultations = await doctorRepository.findPending();
+    consultations = await doctorRepository.findPending(verify.doctor.clinicId);
   } else if (status === 'claimed') {
     consultations = await doctorRepository.findClaimed(verify.doctor.id);
   } else {
@@ -107,7 +108,16 @@ export const claimConsultation = async (userId, consultationId) => {
     };
   }
 
-  // 2. Enforce unassigned rule
+  // 2. Enforce clinic matching rule
+  if (consultation.patient.clinicId !== verify.doctor.clinicId) {
+    return {
+      success: false,
+      status: 403,
+      error: 'You do not have permission to claim cases outside your clinic.',
+    };
+  }
+
+  // 3. Enforce unassigned rule
   if (consultation.doctorId) {
     return {
       success: false,
@@ -116,7 +126,7 @@ export const claimConsultation = async (userId, consultationId) => {
     };
   }
 
-  // 3. Enforce valid state for claiming (must be completed or processing transcript)
+  // 4. Enforce valid state for claiming (must be completed or processing transcript)
   if (!['PROCESSING', 'COMPLETED'].includes(consultation.status)) {
     return {
       success: false,
@@ -125,7 +135,7 @@ export const claimConsultation = async (userId, consultationId) => {
     };
   }
 
-  // 4. Update assignment
+  // 5. Update assignment
   const updatedConsultation = await doctorRepository.claim(consultationId, verify.doctor.id);
 
   return {
@@ -211,4 +221,58 @@ export const reviewConsultation = async (userId, consultationId) => {
 export const getConsultationContext = async (userId, consultationId) => {
   // Call the shared Clinical Context module directly with the DOCTOR role
   return await getClinicalContext(userId, 'DOCTOR', consultationId);
+};
+
+/**
+ * Fetch all patients registered in the doctor's clinic.
+ */
+export const getClinicPatients = async (userId) => {
+  const verify = await getVerifiedDoctor(userId);
+  if (!verify.success) return verify;
+
+  if (!verify.doctor.clinicId) {
+    return {
+      success: true,
+      patients: [],
+    };
+  }
+
+  const patients = await doctorRepository.findPatientsByClinicId(verify.doctor.clinicId);
+  return {
+    success: true,
+    patients,
+  };
+};
+
+/**
+ * Handle doctor uploading an attachment to a consultation.
+ */
+export const uploadAttachment = async (userId, consultationId, file) => {
+  const verify = await getVerifiedDoctor(userId);
+  if (!verify.success) return verify;
+
+  const consultation = await consultationRepository.findById(consultationId);
+  if (!consultation) {
+    return {
+      success: false,
+      status: 404,
+      error: 'Consultation session not found.',
+    };
+  }
+
+  // Access check: Doctor must be assigned to consultation, or belong to same clinic as patient
+  if (consultation.doctorId !== verify.doctor.id && consultation.patient.clinicId !== verify.doctor.clinicId) {
+    return {
+      success: false,
+      status: 403,
+      error: 'You do not have permission to upload files for this consultation.',
+    };
+  }
+
+  const attachment = await saveAttachmentDirect(consultationId, file);
+
+  return {
+    success: true,
+    attachment,
+  };
 };
