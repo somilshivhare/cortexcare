@@ -6,41 +6,34 @@ const Footer = () => {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-5">
           {/* Brand Info */}
-          <div className="col-span-2 space-y-4">
+          <div className="col-span-3 space-y-4">
             <div className="flex items-center space-x-2">
               <div className="h-5 w-5 rounded bg-neutral-900 dark:bg-neutral-50" />
               <span className="font-bold tracking-tight text-neutral-900 dark:text-white">CortexCare</span>
             </div>
             <p className="text-xs max-w-xs leading-relaxed">
-              Ambient clinical assistant automating patient intake summaries through WebRTC audio streams and background AI.
+              AI-powered Clinical Intake & Patient Management Platform coordinating smart diagnostics and secure EMR portability.
             </p>
           </div>
 
-          {/* Product */}
+          {/* Developers & Product */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-300">Product</h4>
             <ul className="mt-4 space-y-2 text-xs">
-              <li><a href="#features" className="hover:text-neutral-950 dark:hover:text-white transition-colors">Features</a></li>
-              <li><a href="#how-it-works" className="hover:text-neutral-950 dark:hover:text-white transition-colors">How It Works</a></li>
-              <li><a href="#security" className="hover:text-neutral-950 dark:hover:text-white transition-colors">Security</a></li>
+              <li><a href="#workflow" className="hover:text-neutral-950 dark:hover:text-white transition-colors font-medium">Workflow</a></li>
+              <li><a href="#features" className="hover:text-neutral-950 dark:hover:text-white transition-colors font-medium">Features</a></li>
+              <li><a href="#showcase" className="hover:text-neutral-950 dark:hover:text-white transition-colors font-medium">Showcase</a></li>
             </ul>
           </div>
 
-          {/* Company */}
+          {/* Links */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-300">Company</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-300">Links</h4>
             <ul className="mt-4 space-y-2 text-xs">
-              <li><a href="#" className="hover:text-neutral-950 dark:hover:text-white transition-colors">About</a></li>
-              <li><a href="#" className="hover:text-neutral-950 dark:hover:text-white transition-colors">Contact</a></li>
-            </ul>
-          </div>
-
-          {/* Developers */}
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-300">Developers</h4>
-            <ul className="mt-4 space-y-2 text-xs">
-              <li><a href="https://github.com/somilshivhare/cortexcare" className="hover:text-neutral-950 dark:hover:text-white transition-colors">GitHub</a></li>
-              <li><a href="https://linkedin.com" className="hover:text-neutral-950 dark:hover:text-white transition-colors">LinkedIn</a></li>
+              <li><a href="https://github.com/somilshivhare/cortexcare" className="hover:text-neutral-950 dark:hover:text-white transition-colors font-medium">GitHub</a></li>
+              <li><a href="#" className="hover:text-neutral-950 dark:hover:text-white transition-colors font-medium">Documentation</a></li>
+              <li><a href="#" className="hover:text-neutral-950 dark:hover:text-white transition-colors font-medium">Privacy</a></li>
+              <li><a href="#" className="hover:text-neutral-950 dark:hover:text-white transition-colors font-medium">Contact</a></li>
             </ul>
           </div>
         </div>

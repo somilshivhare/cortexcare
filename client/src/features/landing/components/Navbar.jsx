@@ -10,10 +10,11 @@ const Navbar = () => {
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const navLinks = [
+    { name: 'Workflow', href: '#workflow' },
     { name: 'Features', href: '#features' },
-    { name: 'How It Works', href: '#how-it-works' },
-    { name: 'Security', href: '#security' },
-    { name: 'FAQ', href: '#faq' },
+    { name: 'Showcase', href: '#showcase' },
+    { name: 'Why us', href: '#why-us' },
+    { name: 'Technology', href: '#technology' },
   ];
 
   return (

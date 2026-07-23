@@ -1,17 +1,11 @@
 import React from 'react';
 import Navbar from '../components/Navbar.jsx';
 import Hero from '../components/Hero.jsx';
-import TrustedBy from '../components/TrustedBy.jsx';
-import ProductDemo from '../components/ProductDemo.jsx';
+import WorkflowTimeline from '../components/WorkflowTimeline.jsx';
 import Features from '../components/Features.jsx';
-import HowItWorks from '../components/HowItWorks.jsx';
-import Security from '../components/Security.jsx';
-import ComparisonSection from '../components/ComparisonSection.jsx';
-import Stats from '../components/Stats.jsx';
-import Testimonials from '../components/Testimonials.jsx';
-import EngineeringHighlights from '../components/EngineeringHighlights.jsx';
-import FAQ from '../components/FAQ.jsx';
-import CTA from '../components/CTA.jsx';
+import ProductShowcase from '../components/ProductShowcase.jsx';
+import WhyUs from '../components/WhyUs.jsx';
+import TechGrid from '../components/TechGrid.jsx';
 import Footer from '../components/Footer.jsx';
 
 /**
@@ -23,17 +17,11 @@ const LandingPage = () => {
     <div className="w-full bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white transition-colors duration-300">
       <Navbar />
       <Hero />
-      <TrustedBy />
-      <ProductDemo />
+      <WorkflowTimeline />
       <Features />
-      <HowItWorks />
-      <Security />
-      <ComparisonSection />
-      <Stats />
-      <Testimonials />
-      <EngineeringHighlights />
-      <FAQ />
-      <CTA />
+      <ProductShowcase />
+      <WhyUs />
+      <TechGrid />
       <Footer />
     </div>
   );
