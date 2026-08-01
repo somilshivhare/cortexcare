@@ -1,6 +1,6 @@
 import ai from '../../../config/gemini.js';
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
 
 /**
  * GeminiClient — the ONLY module that communicates with the Gemini SDK.
@@ -21,6 +21,9 @@ export class GeminiClient {
       return response.text?.trim() || "Thank you for sharing that. Could you tell me more about when these symptoms started?";
     } catch (err) {
       console.error('[GeminiClient] generateConversationReply error:', err.message);
+      if (process.env.NODE_ENV !== 'production') {
+        return "I'm having trouble connecting to the Gemini AI service (please check your GEMINI_API_KEY in server/.env). Could you share more details about your symptoms in the meantime?";
+      }
       throw new Error('AI service temporarily unavailable. Please try again.');
     }
   }
