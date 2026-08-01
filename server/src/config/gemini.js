@@ -11,10 +11,6 @@ if (!apiKey) {
   }
 }
 
-if (apiKey && (apiKey.startsWith('AQ.') || apiKey.startsWith('ya29.'))) {
-  console.warn('[Gemini Config] WARNING: Provided API key appears to be a Google OAuth Access Token instead of a Gemini API Key (AIzaSy...). The Gemini Developer API requires an API key.');
-}
-
 // Instantiate Google GenAI SDK Client explicitly using API key authentication
 const ai = new GoogleGenAI({
   apiKey: apiKey || 'dummy_api_key_for_local_testing',
