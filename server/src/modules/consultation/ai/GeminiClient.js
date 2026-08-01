@@ -14,6 +14,11 @@ export class GeminiClient {
    */
   static async generateConversationReply(prompt) {
     try {
+      console.log('[GeminiClient DEBUG]', {
+        model: MODEL,
+        sdk: '@google/genai',
+        authMethod: 'API Key (x-goog-api-key)',
+      });
       const response = await ai.models.generateContent({
         model: MODEL,
         contents: prompt,
