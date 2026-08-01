@@ -29,12 +29,15 @@ const PatientOnboardingPage = () => {
     );
   }
 
-  // If already onboarded, redirect straight to dashboard
-  const isClinicComplete = !!profile?.clinicId;
+  const [skippedClinic, setSkippedClinic] = useState(false);
+
+  // If already onboarded (profile is complete), redirect straight to dashboard
   const isProfileComplete = !!profile?.firstName?.trim();
-  if (isClinicComplete && isProfileComplete) {
+  if (isProfileComplete) {
     return <Navigate to="/patient/dashboard" replace />;
   }
+
+  const isClinicComplete = !!profile?.clinicId || skippedClinic;
 
   const handleJoinClinic = async (e) => {
     e.preventDefault();
@@ -90,11 +93,11 @@ const PatientOnboardingPage = () => {
       <div className="w-full max-w-md space-y-8 rounded-2xl border border-neutral-200/80 bg-white p-8 shadow-xs dark:border-neutral-800/80 dark:bg-neutral-900">
         <div>
           <h2 className="text-center text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
-            {!isClinicComplete ? '1. Link Clinic Workspace' : '2. Setup Patient Profile'}
+            {!isClinicComplete ? '1. Link Clinic Workspace (Optional)' : '2. Setup Patient Profile'}
           </h2>
           <p className="mt-2 text-center text-xs text-neutral-500 dark:text-neutral-400">
             {!isClinicComplete
-              ? 'Please enter your clinic invite code to link your workspace.'
+              ? 'Enter your clinic invite code if you have one, or skip to setup your account.'
               : 'Fill in your basic identity details to complete onboarding.'}
           </p>
         </div>
@@ -113,14 +116,23 @@ const PatientOnboardingPage = () => {
                 value={inviteCode}
                 onChange={(e) => setInviteCode(e.target.value)}
                 placeholder="e.g. CC-123456"
-                required
                 className="w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-900 outline-none transition-colors focus:border-neutral-950 dark:border-neutral-800 dark:bg-neutral-900 dark:text-white dark:focus:border-white"
               />
             </div>
 
-            <LoadingButton type="submit" isLoading={isSubmitting}>
-              Join Clinic Workspace
-            </LoadingButton>
+            <div className="space-y-3">
+              <LoadingButton type="submit" isLoading={isSubmitting}>
+                Join Clinic Workspace
+              </LoadingButton>
+
+              <button
+                type="button"
+                onClick={() => setSkippedClinic(true)}
+                className="w-full rounded-lg border border-neutral-200 bg-white py-2 text-xs font-bold text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors"
+              >
+                Skip for Now & Continue
+              </button>
+            </div>
           </form>
         ) : (
           <form onSubmit={handleSaveProfile} className="space-y-4">

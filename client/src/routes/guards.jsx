@@ -100,7 +100,10 @@ export const OnboardingGuard = ({ allowedRole, children }) => {
     ? (!!profile?.firstName?.trim() && !!profile?.specialty?.trim())
     : !!profile?.firstName?.trim();
 
-  const isOnboarded = isClinicComplete && isProfileComplete;
+  // Doctors must create/join a clinic; Patients only require profile details (clinic is optional)
+  const isOnboarded = user?.role === 'DOCTOR'
+    ? (isClinicComplete && isProfileComplete)
+    : isProfileComplete;
 
   if (!isOnboarded) {
     const onboardingPath = user?.role === 'DOCTOR' ? '/doctor/onboarding' : '/patient/onboarding';
