@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mic, FileText, User, PlusCircle } from 'lucide-react';
+import { Sparkles, FileText, User, PlusCircle } from 'lucide-react';
 
 const QuickActions = () => {
   const navigate = useNavigate();
@@ -9,8 +9,8 @@ const QuickActions = () => {
   const actions = [
     {
       title: 'Start Consultation',
-      description: 'Begin a secure AI voice-intake consultation.',
-      icon: Mic,
+      description: 'Begin a secure AI clinical intake consultation.',
+      icon: Sparkles,
       path: '/patient/consultation',
       color: 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900',
       actionLabel: 'Launch Session',

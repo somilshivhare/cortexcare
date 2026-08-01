@@ -131,7 +131,7 @@ const SettingsPage = () => {
               <div className="space-y-3.5">
                 <AlertCheckbox label="Email Health Digests" description="Receive weekly summaries detailing clinical contexts and symptom changes." checked={emailAlerts} onChange={setEmailAlerts} />
                 <AlertCheckbox label="Finalized Intake Alerts" description="Get alert badges instantly once your clinician finishes auditing logs." checked={sessionCompleted} onChange={setSessionCompleted} />
-                <AlertCheckbox label="Product Updates" description="Stay informed of upcoming voice engine milestones and platform upgrades." checked={marketingIntake} onChange={setMarketingIntake} />
+                <AlertCheckbox label="Product Updates" description="Stay informed of platform upgrades and AI clinical intake engine milestones." checked={marketingIntake} onChange={setMarketingIntake} />
               </div>
               <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 flex justify-end">
                 <button type="submit" className="rounded-lg bg-neutral-900 px-4 py-2 text-xs font-bold text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-955 transition-colors">
@@ -162,7 +162,7 @@ const SettingsPage = () => {
               <Trash className="h-4.5 w-4.5" /><span>Danger Zone</span>
             </h3>
             <p className="text-[11px] leading-relaxed text-rose-850/80 dark:text-rose-455">
-              Permanently delete your CortexCare account, historical voice transcript files, and AI context summary logs.
+              Permanently delete your CortexCare account, historical consultation files, and AI context summary logs.
             </p>
             <button onClick={() => setDeleteConfirmOpen(true)} className="w-full rounded-lg bg-rose-600 hover:bg-rose-700 py-2 text-xs font-bold text-white transition-colors">
               Deactivate Account

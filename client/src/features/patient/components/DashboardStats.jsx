@@ -14,7 +14,7 @@ const DashboardStats = ({ clinicalContexts }) => {
     {
       name: 'Total Consultations',
       value: total,
-      description: 'Historical voice sessions',
+      description: 'Historical AI intake sessions',
       icon: Layers,
       color: 'text-neutral-900 dark:text-neutral-50 bg-neutral-100 dark:bg-neutral-800',
     },

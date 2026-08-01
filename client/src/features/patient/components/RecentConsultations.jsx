@@ -68,7 +68,7 @@ const RecentConsultations = ({ clinicalContexts }) => {
       <div className="border-b border-neutral-200/80 px-6 py-4 dark:border-neutral-800/80">
         <h3 className="text-base font-bold text-neutral-900 dark:text-white">Recent Consultations</h3>
         <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-          Summary of voice-intake assessments and AI analysis.
+          Summary of AI clinical intake assessments and analysis.
         </p>
       </div>
 
