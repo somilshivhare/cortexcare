@@ -30,7 +30,7 @@ try {
 
 // Instantiate the Redis client
 const redisConnection = new Redis(redisUrl, {
-  maxRetriesPerRequest: null, // Required by BullMQ
+  maxRetriesPerRequest: null, 
 });
 
 redisConnection.on('connect', () => {

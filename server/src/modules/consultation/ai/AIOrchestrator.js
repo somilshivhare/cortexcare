@@ -22,7 +22,7 @@ export class AIOrchestrator {
       currentMessage,
     });
     
-    return await aiProvider.generateConversationReply(prompt);
+    return await aiProvider.generateConversationReply(prompt, currentMessage);
   }
 
   /**

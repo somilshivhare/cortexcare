@@ -4,8 +4,8 @@ export class GeminiProvider {
   /**
    * Request conversational follow-up from Gemini.
    */
-  async generateConversationReply(prompt) {
-    return await GeminiClient.generateConversationReply(prompt);
+  async generateConversationReply(prompt, currentMessage = '') {
+    return await GeminiClient.generateConversationReply(prompt, currentMessage);
   }
 
   /**
